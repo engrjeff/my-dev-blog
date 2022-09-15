@@ -8,15 +8,15 @@ interface BannerImageProps {
 
 const BannerImage = ({ src, alt }: BannerImageProps) => {
   return (
-    <div className='relative aspect-video rounded-lg'>
+    <div className='relative aspect-video rounded-lg overflow-hidden'>
       <Image
         src={src}
         alt={alt}
         blurDataURL={src}
         placeholder='blur'
         layout='fill'
-        className='rounded-lg'
         objectFit='cover'
+        objectPosition='center'
       />
     </div>
   );

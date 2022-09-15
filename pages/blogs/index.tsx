@@ -8,7 +8,12 @@ type BlogsPageProps = InferGetStaticPropsType<typeof getStaticProps>;
 const BlogsPage: NextPage<BlogsPageProps> = ({ posts }) => {
   return (
     <>
-      <NextSeo title='Blogs - Jeff Segovia' openGraph={{ images: [{ url: '/blog-banner.png' }] }} />
+      <NextSeo
+        title='Blogs - Jeff Segovia'
+        openGraph={{
+          images: [{ url: '/blog-banner.png', alt: 'Jeff Segovia Blog', width: 1200, height: 630 }],
+        }}
+      />
       <div className='space-y-2 mb-6'>
         <h2 className='text-4xl font-bold text-gray-900 dark:text-white'>Blogs</h2>
         <p className='text-gray-600 dark:text-gray-400'>

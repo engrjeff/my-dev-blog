@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://jeffsegovia-dev.vercel.app
+
+# Sitemaps
+Sitemap: https://jeffsegovia-dev.vercel.app/sitemap.xml
