@@ -9,7 +9,15 @@ interface BannerImageProps {
 const BannerImage = ({ src, alt }: BannerImageProps) => {
   return (
     <div className='relative aspect-video rounded-lg'>
-      <Image src={src} alt={alt} layout='fill' className='rounded-lg' objectFit='cover' />
+      <Image
+        src={src}
+        alt={alt}
+        blurDataURL={src}
+        placeholder='blur'
+        layout='fill'
+        className='rounded-lg'
+        objectFit='cover'
+      />
     </div>
   );
 };
