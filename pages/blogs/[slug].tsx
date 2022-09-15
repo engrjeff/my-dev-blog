@@ -2,13 +2,26 @@ import { allPosts, type Post } from '@contentlayer/generated';
 import Link from 'next/link';
 import type { GetStaticProps, GetStaticPaths, NextPage } from 'next';
 import { useMDXComponent } from 'next-contentlayer/hooks';
+import { NextSeo } from 'next-seo';
+
 import BannerImage from '@components/BannerImage';
+import LinkInPage from '@components/LinkInPage';
 
 const BlogScreen: NextPage<{ post: Post }> = ({ post }) => {
   const MDXContent = useMDXComponent(post.body.code);
 
   return (
     <div>
+      <NextSeo
+        title={post.title}
+        openGraph={{
+          images: [
+            {
+              url: post.bannerUrl,
+            },
+          ],
+        }}
+      />
       <Link href='/blogs'>
         <a
           aria-label='back to blogs list'
@@ -37,7 +50,7 @@ const BlogScreen: NextPage<{ post: Post }> = ({ post }) => {
           <p>{post.timeToRead}</p>
         </div>
         <div className='text-justify '>
-          <MDXContent components={{ BannerImage }} />
+          <MDXContent components={{ BannerImage, LinkInPage }} />
         </div>
       </article>
     </div>

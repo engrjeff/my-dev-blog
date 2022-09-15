@@ -1,6 +1,6 @@
 import { allPosts, type Post } from '@contentlayer/generated';
-import Link from 'next/link';
 import type { GetStaticProps, NextPage, InferGetStaticPropsType } from 'next';
+import { NextSeo } from 'next-seo';
 import BlogCard from '@components/BlogCard';
 
 type BlogsPageProps = InferGetStaticPropsType<typeof getStaticProps>;
@@ -8,6 +8,7 @@ type BlogsPageProps = InferGetStaticPropsType<typeof getStaticProps>;
 const BlogsPage: NextPage<BlogsPageProps> = ({ posts }) => {
   return (
     <>
+      <NextSeo title='Blogs | Jeff Segovia' />
       <div className='space-y-2 mb-6'>
         <h2 className='text-4xl font-bold'>Blogs</h2>
         <p className='dark:text-gray-400'>
@@ -15,7 +16,7 @@ const BlogsPage: NextPage<BlogsPageProps> = ({ posts }) => {
           pick up a thing or two from these. 😊
         </p>
       </div>
-      <div className='grid grid-cols-3 gap-x-6 gap-y-10'>
+      <div className='grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-10'>
         {posts.map((post) => (
           <BlogCard key={post._id} post={post} />
         ))}
