@@ -18,7 +18,14 @@ const Layout = ({ children }: { children: ReactNode }) => {
       <NextSeo
         title='Jeff Segovia'
         description='The dev blog and portfolio website of Engineer Jeff Segovia'
-        openGraph={{ images: [{ url: '/home-banner.png' }] }}
+        openGraph={{
+          images: [{ url: '/home-banner.png', alt: 'Jeff Segovia Dev', width: 1200, height: 630 }],
+        }}
+        twitter={{
+          handle: '@engrjeff',
+          site: 'jeffsegovia.dev',
+          cardType: 'summary_large_image',
+        }}
       />
       <header className='backdrop-blur-lg py-6 md:py-8 sticky top-0 bg-white dark:bg-darkest/70 border-b border-gray-200 dark:border-gray-700 z-10'>
         <nav className='container max-w-6xl flex items-center justify-between'>

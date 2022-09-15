@@ -123,9 +123,7 @@ function App() {
 
 In order to know which input the user is editing and to properly assign values to our `fields` state, we need to change our `onChange` handler.
 
-```tsx showLineNumbers {16-22, 32-33}
-// working with forms using React hooks
-
+```tsx showLineNumbers {14-20, 30-31}
 import React from 'react';
 import { createUser } from '../some-fake-user-api-service';
 
@@ -165,9 +163,7 @@ function App() {
 
 With this approach, when we add other inputs, say an `email` and a `password` field, we don't have to change anything in our `handleChange` function. What we just need to update is our `fields` state.
 
-```tsx showLineNumbers {11-12, 16}
-// working with forms using React hooks
-
+```tsx showLineNumbers {9-10, 14}
 import React from 'react';
 import { createUser } from '../some-fake-user-api-service';
 

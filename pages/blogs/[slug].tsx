@@ -18,6 +18,9 @@ const BlogScreen: NextPage<{ post: Post }> = ({ post }) => {
           images: [
             {
               url: post.bannerUrl,
+              alt: post.title,
+              width: 1200,
+              height: 630,
             },
           ],
         }}
