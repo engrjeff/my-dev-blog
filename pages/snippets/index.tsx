@@ -1,8 +1,10 @@
 import type { NextPage } from 'next';
+import { NextSeo } from 'next-seo';
 
 const SnippetsPage: NextPage = () => {
   return (
     <>
+      <NextSeo title='Snippets | Jeff Segovia' />
       <div className='space-y-2 mb-6 h-screen'>
         <h2 className='text-4xl font-bold'>Snippets</h2>
         <p className='dark:text-gray-400'>

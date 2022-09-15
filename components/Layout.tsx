@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import type { ReactNode } from 'react';
+import { NextSeo } from 'next-seo';
 
 const routes = [
   { label: 'Home', path: '/' },
@@ -14,14 +15,18 @@ const Layout = ({ children }: { children: ReactNode }) => {
 
   return (
     <div className='bg-white dark:bg-darkest'>
-      <header className='backdrop-blur-lg py-8 sticky top-0 bg-white dark:bg-darkest/70 border-b border-gray-200 dark:border-gray-700 z-10'>
+      <NextSeo
+        title='Jeff Segovia'
+        description='The dev blog and portfolio website of Engineer Jeff Segovia'
+      />
+      <header className='backdrop-blur-lg py-6 md:py-8 sticky top-0 bg-white dark:bg-darkest/70 border-b border-gray-200 dark:border-gray-700 z-10'>
         <nav className='container max-w-6xl flex items-center justify-between'>
           <Link href='/'>
             <a className='text-xl font-semibold text-gray-900 dark:text-white'>
               jeffsegovia<span className='text-primary'>.dev</span>
             </a>
           </Link>
-          <div className='flex items-center gap-3'>
+          <div className='hidden md:flex items-center gap-3'>
             {routes.map((route) => (
               <Link key={route.label} href={route.path}>
                 <a

@@ -1,0 +1,256 @@
+---
+title: Managing Forms In ReactJS Using React-Hook-Form
+author: Jeff Segovia
+bannerUrl: /react-hook-form-1.png
+publishedAt: Sept 15, 2022
+tags:
+  - ReactJS
+  - hooks
+  - form
+---
+
+export const bannerUrl = '/react-hook-form-1.png';
+
+<BannerImage src={bannerUrl} alt='react hook form' />
+
+## Introducing React-Hook-Form
+
+In [this] post we've seen how to manage a very basic form in ReactJS using the built-in `useState` hook. While that works just fine, we will inevitably come across different form-related requirements such as validation which will require us to handle everything ourselves. To help us create better forms with React, we'll surely try to look on the internet if there are libraries that address most of use-cases involving forms. And yes, there are TONS of them. But today, I'll try to walk you through with my favorite form-handling library for React - the React Hook Form.
+
+According to the <LinkInPage text='react-hook-form docs' href='https://react-hook-form.com/' />, the library is a:
+
+> Performant, flexible and extensible forms with easy-to-use validation.
+
+That sounds promising, and that's because it is! Now, to get started, let us install install it first.
+
+```shell
+  npm install react-hook-form
+```
+
+## Using React-hook-form
+
+To demonstrate the basic features of the library, let us create a simple form:
+
+```tsx title="App.tsx" showLineNumbers
+import React from 'react';
+
+function App() {
+  // let's us create a simple markup first
+  return (
+    <form>
+      <input placeholder='First Name' />
+      <input placeholder='Last Name' />
+      <input type='email' placeholder='Email' />
+      <button type='submit'>Submit</button>
+    </form>
+  );
+}
+```
+
+Now, let us throw react-hook-form into the mix by importing a hook called `useForm` from it:
+
+```tsx title="App.tsx" showLineNumbers {2,5}
+import * as React from 'react';
+import { useForm } from 'react-hook-form';
+
+function App() {
+  const myForm = useForm();
+
+  return (
+    <form>
+      <input placeholder='First Name' />
+      <input placeholder='Last Name' />
+      <input type='email' placeholder='Email' />
+      <button type='submit'>Submit</button>
+    </form>
+  );
+}
+```
+
+Let us define now the `type` or shape of the data that we want to submit to the server and then supply that type to the `useForm` generic. So we'll have:
+
+```tsx title="App.tsx" showLineNumbers {4-8, 11}
+import * as React from 'react';
+import { useForm } from 'react-hook-form';
+
+type UserForm {
+  firstName: string,
+  lastName: string,
+  email: string
+}
+
+function App() {
+  const myForm = useForm<UserForm>();
+
+  return (
+    <form>
+      <input placeholder='First Name' />
+      <input placeholder='Last Name' />
+      <input type='email' placeholder='Email' />
+      <button type='submit'>Submit</button>
+    </form>
+  );
+}
+```
+
+The next thing to do is to supply an `options` object to the `useForm` hook. To keep things simple, we'll only supply the `defaultValues` and the `mode` which tells the library when to validate the form. Having the `mode` as `onSubmit` that only when the form is submitted the validations will run.
+
+```tsx title="App.tsx" showLineNumbers
+const myForm = useForm<UserForm>({
+  mode: 'onSubmit', // other values can be: onChange | onBlur | onSubmit | onTouched
+  defaultValues: {
+    firstName: '',
+    lastName: '',
+    email: '',
+  },
+});
+```
+
+To make the form working, we need to 'register' our inputs. Also, we need to provide a submit handler for our `<form />`. React-hook-form will give us all that we need to achieve that. We will use the `register` function to register our inputs and the `handleSubmit` function to submit our form.
+
+```tsx title="App.tsx" showLineNumbers {2, 20, 23-27, 30-33}
+import * as React from 'react';
+import { useForm, SubmitHandler } from 'react-hook-form';
+
+type UserForm {
+  firstName: string,
+  lastName: string,
+  email: string
+}
+
+function App() {
+  const myForm = useForm<UserForm>({
+    mode: 'onSubmit', // other values can be: onChange | onBlur | onSubmit | onTouched
+    defaultValues: {
+      firstName: '',
+      lastName: '',
+      email: '',
+    },
+});
+
+  const { register, handleSubmit } = myForm;
+
+  // the type of the formData will be `UserForm`
+  const onSubmit: SubmitHandler<UserForm> = (formData) => {
+    console.log(formData);
+
+    //submit the form the server
+  }
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <input placeholder='First Name' {...register('firstName')}/>
+      <input placeholder='Last Name' {...register('lastName')}/>
+      <input type='email' placeholder='Email' {...register('email')}/>
+      <button type='submit'>Submit</button>
+    </form>
+  );
+}
+```
+
+The `register` function is required so that the value of our inputs will be available for validation and submission. The capturing of the values of our form inputs is now working as well as the submission.
+
+Notice that we spread the returned value of the `register` function. That function returns the following:
+
+- onChange of type `ChangeHandler`
+- onBlur of type `ChangeHandler`
+- ref of type `React.Ref<any>`
+- name of type `string`
+
+For further information about this awesome function, you may refer to this <LinkInPage text='link' href='https://react-hook-form.com/api/useform/register' />.
+
+## Validations and Catching Errors
+
+To further improve our form, let us add validations. Fortunately, react-hook-form also gives us a way to validate our inputs. For this example, let us make all fields required.
+
+```tsx title="App.tsx" showLineNumbers {2-4}
+<form onSubmit={handleSubmit(onSubmit)}>
+  <input placeholder='First Name' {...register('firstName', { required: true })} />
+  <input placeholder='Last Name' {...register('lastName', { required: true })} />
+  <input type='email' placeholder='Email' {...register('email', { required: true })} />
+  <button type='submit'>Submit</button>
+</form>
+```
+
+That was nice! There are other validation rules which we can add to each `register` function: Such are as follows:
+
+- required
+- min
+- max
+- minLength
+- maxLength
+- pattern
+- validate
+
+Now, when we hit the Submit button with any of the inputs having no value, react-hook-form gives us the validation errors. To catch such potential errors, we need to provide an `errorHandler` function to our `handleSubmit`.
+
+```tsx title="App.tsx" showLineNumbers {2,22-24,33}
+import * as React from 'react';
+import { useForm, SubmitHandler, SubmitErrorHandler } from 'react-hook-form';
+
+type UserForm {
+  firstName: string,
+  lastName: string,
+  email: string
+}
+
+function App() {
+  const myForm = useForm<UserForm>({
+    mode: 'onSubmit',
+    defaultValues: {
+      firstName: '',
+      lastName: '',
+      email: '',
+    },
+});
+
+  const { register, handleSubmit } = myForm;
+
+  const onError: SubmitErrorHandler<UserForm> = (error) => {
+    console.error(error);
+  }
+
+  const onSubmit: SubmitHandler<UserForm> = (formData) => {
+    console.log(formData);
+
+    //submit the form the server
+  }
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit, onError)}>
+      <input placeholder='First Name' {...register('firstName', { required: true })} />
+      <input placeholder='Last Name' {...register('lastName', { required: true })} />
+      <input type='email' placeholder='Email' {...register('email', { required: true })} />
+      <button type='submit'>Submit</button>
+    </form>
+  );
+}
+```
+
+Let us now try to render the errors so that the user of our form will know what has gone wrong. For this, we'll do some refactoring on our mark up. Let us wrap our `<input />` inside a `div` and with put underneath it a `<span />` in which a potential error message will be rendered.
+
+```tsx title="App.tsx" showLineNumbers {4-5, 10, 14, 18}
+/* other code here */
+
+// get the `errors` object from the `formState`
+const { register, handleSubmit, formState } = myForm;
+const { errors } = formState;
+
+<form onSubmit={handleSubmit(onSubmit, onError)}>
+  <div>
+    <input placeholder='First Name' {...register('firstName', { required: true })} />
+    {errors.firstName && <span>{errors.firstName.message}</span>}
+  </div>
+  <div>
+    <input placeholder='Last Name' {...register('lastName', { required: true })} />
+    {errors.lastName && <span>{errors.lastName.message}</span>}
+  </div>
+  <div>
+    <input type='email' placeholder='Email' {...register('email', { required: true })} />
+    {errors.email && <span>{errors.email.message}</span>}
+  </div>
+  <button type='submit'>Submit</button>
+</form>;
+```
+
+First, we accessed the `errors` object from the `formState` which also comes from the `register` function. Then, we render the error inside a `<span />` tag by accessing `errors.[key].message`. Notice also that we're only rendering the error when the `errors.[key]` is truthy.
