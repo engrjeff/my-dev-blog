@@ -1,0 +1,220 @@
+---
+title: Basic Form Handling With ReactJS
+author: Jeff Segovia
+bannerUrl: /basic-form-react.png
+publishedAt: Sept 15, 2022
+tags:
+  - ReactJS
+  - form
+---
+
+export const bannerUrl = '/basic-form-react.png';
+
+<BannerImage src={bannerUrl} alt='basic form handling with react js' />
+
+Most software applications require a developer to know how to manage forms. But this task is one of the most struggling for many developers. However, managing forms is inevitable when you're a software developer. In my field which is web development, ReactJS is the most popular UI library at the time of this writing. But as devs migrate their projects to or started learning React, managing forms is still somehow hard. Let's take a look on how to work with forms with ReactJs using `hooks` that it provides:
+
+```tsx showLineNumbers
+// working with forms using React hooks
+
+import React from 'react';
+
+function App() {
+  // let's us create a simple markup first
+  return (
+    <form>
+      <input placeholder='First Name' />
+      <input placeholder='Last Name' />
+      <button type='submit'>Submit</button>
+    </form>
+  );
+}
+```
+
+Now, our app should submit the form data to some remote server. But first, we need a way to extract the `<input />` values. We can track the value of each `<input />` using React's `useState` hook:
+
+```tsx showLineNumbers {7-8}
+// working with forms using React hooks
+
+import React from 'react';
+
+function App() {
+  // adding the useState hook
+  const [firstName, setFirstName] = React.useState('');
+  const [lastName, setLastName] = React.useState('');
+
+  // let us sync the state of each <input /> with our states
+  // by providing a `value` and an `onChange` handler to our inputs
+  return (
+    <form>
+      <input
+        placeholder='First Name'
+        value={firstName}
+        onChange={(e) => setFirstName(e.target.value)}
+      />
+      <input
+        placeholder='Last Name'
+        value={lastName}
+        onChange={(e) => setLastName(e.target.value)}
+      />
+      <button type='submit'>Submit</button>
+    </form>
+  );
+}
+```
+
+The next step is to gather all the input values and submit them as an object to the server. For this we are adding a submit handler for the form.
+
+```tsx showLineNumbers {11-15, 20}
+// working with forms using React hooks
+
+import React from 'react';
+import { createUser } from '../some-fake-user-api-service';
+
+function App() {
+  // adding the useState hook
+  const [firstName, setFirstName] = React.useState('');
+  const [lastName, setLastName] = React.useState('');
+
+  const handleSubmit = async () => {
+    const userData = { firstName, lastName };
+
+    await createUser(userData);
+  };
+
+  // let us sync the state of each <input /> with our states
+  // by providing a `value` and an `onChange` handler to our inputs
+  return (
+    <form onSubmit={handleSubmit}>
+      <input
+        placeholder='First Name'
+        value={firstName}
+        onChange={(e) => setFirstName(e.target.value)}
+      />
+      <input
+        placeholder='Last Name'
+        value={lastName}
+        onChange={(e) => setLastName(e.target.value)}
+      />
+      <button type='submit'>Submit</button>
+    </form>
+  );
+}
+```
+
+Our form is done! We have managed to submit the form values to the server with ease. But for sure you're asking: How about validations? how about if the form grows complex? what about tracking if the form has been submitted or is submitting? Yeah, I know. Managing forms also means providing our users a better experience.
+
+We'll address these questions in another post. For now, let's refactor our form a bit.
+
+As you can see, each input of our form has a dedicated state and state setter. This approach is not good for bigger forms. Let's see now what we can do to improve our current implementation.
+
+```tsx showLineNumbers {8-11}
+// working with forms using React hooks
+
+import React from 'react';
+import { createUser } from '../some-fake-user-api-service';
+
+function App() {
+  // A better way
+  const [fields, setFields] = React.useState({
+    firstName: '',
+    lastName: '',
+  });
+
+  const handleSubmit = async () => {
+    const userData = { ...fields };
+
+    await createUser(userData);
+  };
+
+  // render markup here...
+}
+```
+
+In order to know which input the user is editing and to properly assign values to our `fields` state, we need to change our `onChange` handler.
+
+```tsx showLineNumbers {16-22, 32-33}
+// working with forms using React hooks
+
+import React from 'react';
+import { createUser } from '../some-fake-user-api-service';
+
+function App() {
+  // A better way
+  const [fields, setFields] = React.useState({
+    firstName: '',
+    lastName: '',
+  });
+
+  // extract properties from fields
+  const { firstName, lastName } = fields;
+
+  const handleChange = (e) => {
+    // name -> the `name` attribute of the input
+    // value -> the actual value of the input
+    const { name, value } = e.target;
+
+    setFields((oldValues) => ({ ...oldValues, [name]: value }));
+  };
+
+  const handleSubmit = async () => {
+    const userData = { ...fields };
+
+    await createUser(userData);
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input placeholder='First Name' value={firstName} name='firstName' onChange={handleChange} />
+      <input placeholder='Last Name' value={lastName} name='lastName' onChange={handleChange} />
+      <button type='submit'>Submit</button>
+    </form>
+  );
+}
+```
+
+With this approach, when we add another input, say an `email` and a `password` field, we don't have to change anything in our `handleChange` function. What we just need to update is our `fields` state.
+
+```tsx showLineNumbers {11-12, 16}
+// working with forms using React hooks
+
+import React from 'react';
+import { createUser } from '../some-fake-user-api-service';
+
+function App() {
+  // A better way
+  const [fields, setFields] = React.useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+  });
+
+  // extract properties from fields
+  const { firstName, lastName, email, password } = fields;
+
+  /** handlers here */
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input placeholder='First Name' value={firstName} name='firstName' onChange={handleChange} />
+      <input placeholder='Last Name' value={lastName} name='lastName' onChange={handleChange} />
+      <input placeholder='Email' type='email' value={email} name='email' onChange={handleChange} />
+      <input
+        placeholder='Password'
+        type='password'
+        value={password}
+        name='password'
+        onChange={handleChange}
+      />
+      <button type='submit'>Submit</button>
+    </form>
+  );
+}
+```
+
+This is how simple it is to handle basic forms with ReactJS. For future posts, I'll try to address the common requirements of a better form handling implementation such as validation.
+
+Happy coding!
+
+-jep
