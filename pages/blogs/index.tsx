@@ -8,10 +8,10 @@ type BlogsPageProps = InferGetStaticPropsType<typeof getStaticProps>;
 const BlogsPage: NextPage<BlogsPageProps> = ({ posts }) => {
   return (
     <>
-      <NextSeo title='Blogs | Jeff Segovia' />
+      <NextSeo title='Blogs - Jeff Segovia' openGraph={{ images: [{ url: '/blog-banner.png' }] }} />
       <div className='space-y-2 mb-6'>
-        <h2 className='text-4xl font-bold'>Blogs</h2>
-        <p className='dark:text-gray-400'>
+        <h2 className='text-4xl font-bold text-gray-900 dark:text-white'>Blogs</h2>
+        <p className='text-gray-600 dark:text-gray-400'>
           Being able to share what I know through these posts is truly a delight for me. May you
           pick up a thing or two from these. 😊
         </p>
@@ -22,7 +22,7 @@ const BlogsPage: NextPage<BlogsPageProps> = ({ posts }) => {
         ))}
       </div>
       <div className='my-10'>
-        <button className='bg-primary hover:bg-primary/95 text-white py-4 px-8 rounded-full shadow-md'>
+        <button className='bg-primary hover:bg-primary/95 text-white font-medium py-4 px-8 rounded-full shadow-md'>
           Load More Posts
         </button>
       </div>
@@ -30,10 +30,22 @@ const BlogsPage: NextPage<BlogsPageProps> = ({ posts }) => {
   );
 };
 
-export const getStaticProps: GetStaticProps<{ posts: Post[] }> = () => {
+export const getStaticProps: GetStaticProps<{ posts: Omit<Post, 'body'>[] }> = () => {
   return {
     props: {
-      posts: allPosts,
+      posts: allPosts.map<Omit<Post, 'body'>>((post) => ({
+        _id: post._id,
+        _raw: post._raw,
+        author: post.author,
+        bannerUrl: post.bannerUrl,
+        publishedAt: post.publishedAt,
+        slug: post.slug,
+        tags: post.tags,
+        timeToRead: post.timeToRead,
+        title: post.title,
+        url: post.url,
+        type: post.type,
+      })),
     },
   };
 };

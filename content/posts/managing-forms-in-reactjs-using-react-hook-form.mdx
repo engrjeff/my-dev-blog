@@ -13,9 +13,9 @@ export const bannerUrl = '/react-hook-form-1.png';
 
 <BannerImage src={bannerUrl} alt='react hook form' />
 
-## Introducing React-Hook-Form
+## The React-Hook-Form Library
 
-In [this] post we've seen how to manage a very basic form in ReactJS using the built-in `useState` hook. While that works just fine, we will inevitably come across different form-related requirements such as validation which will require us to handle everything ourselves. To help us create better forms with React, we'll surely try to look on the internet if there are libraries that address most of use-cases involving forms. And yes, there are TONS of them. But today, I'll try to walk you through with my favorite form-handling library for React - the React Hook Form.
+In [this] post we've seen how to manage a very basic form in ReactJS using the built-in `useState` hook. While that works just fine, we will inevitably come across different form-related requirements such as validation which will require us to handle everything ourselves. To help us create better forms with React, we'll surely try to look on the internet if there are libraries that address most of use-cases involving forms. And yes, there are TONS of them. But in this post, I'll try to walk you through with the basics of my favorite form library for React - the React Hook Form.
 
 According to the <LinkInPage text='react-hook-form docs' href='https://react-hook-form.com/' />, the library is a:
 
@@ -35,7 +35,7 @@ To demonstrate the basic features of the library, let us create a simple form:
 import React from 'react';
 
 function App() {
-  // let's us create a simple markup first
+  // let's create a simple form first
   return (
     <form>
       <input placeholder='First Name' />
@@ -73,11 +73,11 @@ Let us define now the `type` or shape of the data that we want to submit to the 
 import * as React from 'react';
 import { useForm } from 'react-hook-form';
 
-type UserForm {
-  firstName: string,
-  lastName: string,
-  email: string
-}
+type UserForm = {
+  firstName: string;
+  lastName: string;
+  email: string;
+};
 
 function App() {
   const myForm = useForm<UserForm>();
@@ -93,7 +93,7 @@ function App() {
 }
 ```
 
-The next thing to do is to supply an `options` object to the `useForm` hook. To keep things simple, we'll only supply the `defaultValues` and the `mode` which tells the library when to validate the form. Having the `mode` as `onSubmit` that only when the form is submitted the validations will run.
+The next thing to do is to supply an `options` object to the `useForm` hook. To keep things simple, we'll only supply the `defaultValues` and the `mode` which tells the library when to validate the form. Having the `mode` as `onSubmit` means that only when the form is submitted the validations will run.
 
 ```tsx title="App.tsx" showLineNumbers
 const myForm = useForm<UserForm>({
@@ -112,11 +112,11 @@ To make the form working, we need to 'register' our inputs. Also, we need to pro
 import * as React from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 
-type UserForm {
-  firstName: string,
-  lastName: string,
-  email: string
-}
+type UserForm = {
+  firstName: string;
+  lastName: string;
+  email: string;
+};
 
 function App() {
   const myForm = useForm<UserForm>({
@@ -126,7 +126,7 @@ function App() {
       lastName: '',
       email: '',
     },
-});
+  });
 
   const { register, handleSubmit } = myForm;
 
@@ -135,13 +135,13 @@ function App() {
     console.log(formData);
 
     //submit the form the server
-  }
+  };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      <input placeholder='First Name' {...register('firstName')}/>
-      <input placeholder='Last Name' {...register('lastName')}/>
-      <input type='email' placeholder='Email' {...register('email')}/>
+      <input placeholder='First Name' {...register('firstName')} />
+      <input placeholder='Last Name' {...register('lastName')} />
+      <input type='email' placeholder='Email' {...register('email')} />
       <button type='submit'>Submit</button>
     </form>
   );
@@ -184,44 +184,38 @@ That was nice! There are other validation rules which we can add to each `regist
 
 Now, when we hit the Submit button with any of the inputs having no value, react-hook-form gives us the validation errors. To catch such potential errors, we need to provide an `errorHandler` function to our `handleSubmit`.
 
-```tsx title="App.tsx" showLineNumbers {2,22-24,33}
+```tsx title="App.tsx" showLineNumbers {2,15-17,26}
 import * as React from 'react';
 import { useForm, SubmitHandler, SubmitErrorHandler } from 'react-hook-form';
 
-type UserForm {
-  firstName: string,
-  lastName: string,
-  email: string
-}
+type UserForm = {
+  firstName: string;
+  lastName: string;
+  email: string;
+};
 
 function App() {
-  const myForm = useForm<UserForm>({
-    mode: 'onSubmit',
-    defaultValues: {
-      firstName: '',
-      lastName: '',
-      email: '',
-    },
-});
+  const myForm = useForm<UserForm>({ ... });
 
   const { register, handleSubmit } = myForm;
 
   const onError: SubmitErrorHandler<UserForm> = (error) => {
     console.error(error);
-  }
+  };
 
   const onSubmit: SubmitHandler<UserForm> = (formData) => {
     console.log(formData);
 
     //submit the form the server
-  }
+  };
 
   return (
     <form onSubmit={handleSubmit(onSubmit, onError)}>
-      <input placeholder='First Name' {...register('firstName', { required: true })} />
-      <input placeholder='Last Name' {...register('lastName', { required: true })} />
-      <input type='email' placeholder='Email' {...register('email', { required: true })} />
-      <button type='submit'>Submit</button>
+      {/*
+        your
+        inputs
+        here
+      */}
     </form>
   );
 }
@@ -254,3 +248,71 @@ const { errors } = formState;
 ```
 
 First, we accessed the `errors` object from the `formState` which also comes from the `register` function. Then, we render the error inside a `<span />` tag by accessing `errors.[key].message`. Notice also that we're only rendering the error when the `errors.[key]` is truthy.
+
+## Validation Using Yup
+
+React-hook-form gives us a way to provide validation rules to our input fields. But there are times that we are required to use schema-based form validation. Fortunately, react-hook-form also supports schema-based validation with popular libraries like `Yup` and `Zod`. In this section, we will validate our existing form using `Yup`. To get started, let's install the needed dependencies:
+
+```shell
+  npm install @hookform/resolvers yup
+```
+
+The next step is to create the schema for our User object. We do this as follows:
+
+```tsx showLineNumbers
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
+
+const userSchema = yup
+  .object({
+    firstName: yup.string().required('First name is required').trim(),
+    lastName: yup.string().required('Last name is required').trim(),
+    email: yup.string().required('Email is required').email('Invalid email format').trim(),
+  })
+  .required();
+```
+
+That's how we define a schema with validation rules using `yup`. Notice that we can provide a custom error message to a rule and we can also do value sanitation like trimming whitespaces using `.trim()`.
+
+Now inside `App`, we'll add a `resolver` value to the `useForm` options. With this, we can now remove the validation rule (`required`) that we have put earlier as the second parameter of the `register` function.
+
+```tsx showLineNumbers {4}
+function App() {
+  const myForm = useForm<UserForm>({
+    mode: 'onSubmit',
+    resolver: yupResolver(userSchema),
+    defaultValues: {
+      firstName: '',
+      lastName: '',
+      email: '',
+    },
+  });
+
+  /* other codes here */
+}
+```
+
+That's it! our validation becomes simpler and our mark is now cleaner.
+
+## Resetting the form
+
+Our form may have a Cancel button which when clicked must clear all our inputs or it may be a must to reset the form state after the form was submitted successfully. For this requirement, react-hook-form provides us a way to reset the form anytime we want. From the object returned by `useForm` we can get the `reset` function.
+
+```tsx showLineNumbers {2}
+const myForm = useForm<UserForm>({...})
+const { register, handleSubmit, formState , resey } = myForm;
+```
+
+The `reset` function has optional arguments which when provided can let us do partial form state reset. However, when no optional argument is supplied, the entire form state will be reset. We can use this function by just simply calling it.
+
+```tsx showLineNumbers
+<form onSubmit={handleSubmit(onSubmit, onError)}>
+  {/* inputs here */}
+  <button onClick={reset}>Cancel</button>
+  <button type='submit'>Submit</button>
+</form>
+```
+
+## Conclusion
+
+Using the react-hook-form library can largely help us build better forms. Leveraging the power of this library is a wise decision when it comes to managing forms. As your form grows more complex, you will surely appreciate this piece of amazing software. Again, for more information about react-hook-form, you may refer to its website <LinkInPage text='here' href='https://react-hook-form.com/' />.

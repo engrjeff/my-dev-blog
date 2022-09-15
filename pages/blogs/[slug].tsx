@@ -25,7 +25,7 @@ const BlogScreen: NextPage<{ post: Post }> = ({ post }) => {
       <Link href='/blogs'>
         <a
           aria-label='back to blogs list'
-          className='border border-gray-600 inline-block p-3 rounded-full group mb-4'
+          className='border border-gray-300 dark:border-gray-600 text-gray-300 dark:text-white inline-block p-3 rounded-full group mb-4'
         >
           <svg
             xmlns='http://www.w3.org/2000/svg'

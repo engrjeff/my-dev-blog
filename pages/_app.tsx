@@ -5,7 +5,7 @@ import Layout from '@components/Layout';
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
-    <ThemeProvider attribute='class'>
+    <ThemeProvider defaultTheme='dark' attribute='class'>
       <Layout>
         <Component {...pageProps} />
       </Layout>

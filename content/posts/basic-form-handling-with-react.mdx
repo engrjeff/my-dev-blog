@@ -15,12 +15,10 @@ export const bannerUrl = '/basic-form-react.png';
 Most software applications require a developer to know how to manage forms. But this task is one of the most struggling for many developers. However, managing forms is inevitable when you're a software developer. In my field which is web development, ReactJS is the most popular UI library at the time of this writing. But as devs migrate their projects to or started learning React, managing forms is still somehow hard. Let's take a look on how to work with forms with ReactJs using `hooks` that it provides:
 
 ```tsx showLineNumbers
-// working with forms using React hooks
-
 import React from 'react';
 
 function App() {
-  // let's us create a simple markup first
+  // let's create a simple form first
   return (
     <form>
       <input placeholder='First Name' />
@@ -33,9 +31,7 @@ function App() {
 
 Now, our app should submit the form data to some remote server. But first, we need a way to extract the `<input />` values. We can track the value of each `<input />` using React's `useState` hook:
 
-```tsx showLineNumbers {7-8}
-// working with forms using React hooks
-
+```tsx showLineNumbers {5-6}
 import React from 'react';
 
 function App() {
@@ -65,9 +61,7 @@ function App() {
 
 The next step is to gather all the input values and submit them as an object to the server. For this we are adding a submit handler for the form.
 
-```tsx showLineNumbers {11-15, 20}
-// working with forms using React hooks
-
+```tsx showLineNumbers {9-13, 16}
 import React from 'react';
 import { createUser } from '../some-fake-user-api-service';
 
@@ -82,8 +76,6 @@ function App() {
     await createUser(userData);
   };
 
-  // let us sync the state of each <input /> with our states
-  // by providing a `value` and an `onChange` handler to our inputs
   return (
     <form onSubmit={handleSubmit}>
       <input
@@ -106,11 +98,9 @@ Our form is done! We have managed to submit the form values to the server with e
 
 We'll address these questions in another post. For now, let's refactor our form a bit.
 
-As you can see, each input of our form has a dedicated state and state setter. This approach is not good for bigger forms. Let's see now what we can do to improve our current implementation.
+As you can see, each input of our form has a dedicated state and state setter. This approach is not good for bigger forms. Let's improve our current implementation by just using a single object called `fields`.
 
-```tsx showLineNumbers {8-11}
-// working with forms using React hooks
-
+```tsx showLineNumbers {6-9, 12}
 import React from 'react';
 import { createUser } from '../some-fake-user-api-service';
 
@@ -173,7 +163,7 @@ function App() {
 }
 ```
 
-With this approach, when we add another input, say an `email` and a `password` field, we don't have to change anything in our `handleChange` function. What we just need to update is our `fields` state.
+With this approach, when we add other inputs, say an `email` and a `password` field, we don't have to change anything in our `handleChange` function. What we just need to update is our `fields` state.
 
 ```tsx showLineNumbers {11-12, 16}
 // working with forms using React hooks
@@ -213,7 +203,7 @@ function App() {
 }
 ```
 
-This is how simple it is to handle basic forms with ReactJS. For future posts, I'll try to address the common requirements of a better form handling implementation such as validation.
+This is how simple it is to handle basic forms with ReactJS. For future posts, I'll try to walk you through creating better forms using a library called `react-hook-form`.
 
 Happy coding!
 

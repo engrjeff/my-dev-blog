@@ -1,20 +1,13 @@
 import type { NextPage } from 'next';
-import Head from 'next/head';
 import Image from 'next/image';
 import Link from 'next/link';
 
-import { allPosts, type Post } from '@contentlayer/generated';
+import { allPosts } from '@contentlayer/generated';
 import BlogCard from '@components/BlogCard';
 
 const Home: NextPage = () => {
   return (
     <div>
-      <Head>
-        <title>Jeff Dev Blog</title>
-        <meta name='description' content='The dev blog of Jeff Segovia' />
-        <link rel='icon' href='/favicon.ico' />
-      </Head>
-
       <section className='flex flex-col gap-4'>
         <div className='flex items-center gap-4 md:gap-8'>
           <div className='w-14 md:w-16 h-14 md:h-16 relative rounded-full overflow-hidden ring-4 ring-primary/0'>
@@ -35,7 +28,7 @@ const Home: NextPage = () => {
         </p>
         <div className='my-10'>
           <Link href='/blogs'>
-            <a className='bg-primary hover:bg-primary/95 text-white py-4 px-8 rounded-full shadow-md'>
+            <a className='bg-primary hover:bg-primary/95 text-white font-medium py-4 px-8 rounded-full shadow-md'>
               Read the Blogs
             </a>
           </Link>
@@ -52,7 +45,7 @@ const Home: NextPage = () => {
         </div>
         <div className='my-10'>
           <Link href='/blogs'>
-            <a className='bg-primary hover:bg-primary/95 text-white py-4 px-8 rounded-full shadow-md'>
+            <a className='bg-primary hover:bg-primary/95 text-white font-medium py-4 px-8 rounded-full shadow-md'>
               Browse All Posts
             </a>
           </Link>
