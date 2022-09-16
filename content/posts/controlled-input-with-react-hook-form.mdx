@@ -1,0 +1,163 @@
+---
+title: Controlled Input With React-Hook-Form
+author: Jeff Segovia
+bannerUrl: /controlled-input-rhf.png
+publishedAt: Sept 16, 2022
+tags:
+  - ReactJS
+  - form
+---
+
+export const bannerUrl = '/controlled-input-rhf.png';
+
+<BannerImage src={bannerUrl} alt='controlled input with React-Hook-Form' />
+
+While HTML5 is rich enough to give us native inputs, sometimes our app requires forms with more complex inputs. Some common use cases are: a UI to get the user's rating for a product, a custom date picker, and a rich-text editor.
+
+## Controlled Components
+
+In React, we can create something called a **controlled component** and it can be a controlled input. A controlled component is that which form data is handled by the component's state. The advantage of controlled components is that we have the ability to hold and manage the data that we want and for this reason we have full control of its value. Many controlled components from UI libraries like **MUI** are available for us to use. However, integrating them to our form is sometimes hard especially when we're just managing our form with React's `useState` or `useReducer` hooks.
+
+Now, I am a big fan of a library called **React-Hook-Form** and it has a way to easily integrate any controlled input to our form that is being managed by its `useForm` hook.
+
+## The `Controller` Components
+
+To make integrating external controlled components to a form simple, RHF gives us a wrapper component called `Controller` in order:
+
+> to streamline the integration process while still giving you the freedom to use a custom register.
+> -RHF docs
+
+Let us try this. For this example, I'll be leveraging the MUI library and use its `<Checkbox />` along with other MUI components.
+
+```tsx title="UserFormComponent.tsx" showLineNumbers {30-32}
+import * as React from 'react';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Checkbox from '@mui/material/Checkbox';
+import TextField from '@mui/material/TextField';
+import Button from '@mui/material/Button';
+
+import { useForm, SubmitHandler } from 'react-hook-form';
+
+type UserFields = {
+  email: string;
+  password: string;
+  rememberMe: boolean;
+};
+
+export default function UserFormComponent() {
+  const { register, handleSubmit } = useForm<UserFields>({
+    defaultValues: {
+      email: '',
+      password: '',
+      rememberMe: false,
+    },
+  });
+
+  const onSubmit: SubmitHandler<UserFields> = (formData) => {
+    console.log(formData);
+  };
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <TextField label='Email' type='email' {...register('email')} />
+      <TextField label='Password' type='password' {...register('password')} />
+      <FormControlLabel control={<Checkbox />} label='Remember Me' />
+      <Button type='submit'>Log In</Button>
+    </form>
+  );
+}
+```
+
+Our form is quite simple for now. The goal is to submit an object with values of email, password, and a rememberMe flag. Notice that we're using the `register` function to handle the email and password inputs. For the rememberMe checkbox, we need to wrap it with the `Controller` component in order to make it work with RHF.
+
+```tsx title="UserFormComponent.tsx" showLineNumbers {3, 10, 26-38}
+/* other imports here */
+
+import { useForm, SubmitHandler, Controller } from 'react-hook-form';
+
+type UserFields = {
+  /*...*/
+};
+
+export default function UserFormComponent() {
+  const { register, handleSubmit, control } = useForm<UserFields>({
+    defaultValues: {
+      email: '',
+      password: '',
+      rememberMe: false,
+    },
+  });
+
+  const onSubmit: SubmitHandler<UserFields> = (formData) => {
+    console.log(formData);
+  };
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <TextField label='Email' type='email' {...register('email')} />
+      <TextField label='Password' type='password' {...register('password')} />
+      <Controller
+        name='rememberMe'
+        control={control}
+        render={({ field }) => {
+          const { name, value, onChange } = field;
+          return (
+            <FormControlLabel
+              control={
+                <Checkbox name={name} checked={value} onChange={(e) => onChange(e.target.value)} />
+              }
+              label='Remember Me'
+            />
+          );
+        }}
+      />
+      <Button type='submit'>Log In</Button>
+    </form>
+  );
+}
+```
+
+So, what's happening here? 😅. First we used the `Controller` component from RHF and we supply a function that returns the Checkbox component to its `render` prop. That function receives an object from which we can get a `field` value. From `field` we can further extract the following:
+
+- onChange
+- onBlur
+- name
+- value
+- ref
+
+For our implementation, we only need the `name`, `onChange` and the `value`. The type of the `value` will be the same as the type of the `rememberMe` property which is a boolean. Note also that we have supplied a `control` prop.
+
+## Another Example: Rating Components
+
+Let me show you another example. This time we'll be using the `Rating` component from MUI. A Rating component is used to let users provide a, well, rating to a product or any entity that we desire to rate and it looks something like this:
+
+![a rating component](/rating.png)
+
+The approach to make the Rating component work with RHF is very straightforward as that of the Checkbox.
+
+```tsx title="RatingControlled.tsx" showLineNumbers
+// import as follows
+import Rating from '@mui/material/Rating';
+
+// wrapping with Controller
+<Controller
+  name='rating'
+  control={control}
+  render={({ field }) => {
+    const { name, value, onChange } = field;
+    return (
+      <Rating
+        name={name}
+        value={value}
+        onChange={(event, newValue) => {
+          onChange(newValue);
+        }}
+      />
+    );
+  }}
+/>;
+```
+
+## Conclusion
+
+Leveraging the RHF's Controller component makes it a lot easier to work with any kind of input, whether controlled or uncontrolled, whether from an external library or with something that we have created ourselves.

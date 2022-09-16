@@ -46,13 +46,13 @@ const BlogScreen: NextPage<{ post: Post }> = ({ post }) => {
           </svg>
         </a>
       </Link>
-      <article className='prose lg:prose-lg mx-auto prose-a:no-underline hover:prose-a:text-primary prose-code:text-primary prose-blockquote:font-normal dark:prose-invert'>
+      <article className='prose lg:prose-lg mx-auto prose-a:no-underline hover:prose-a:text-primary prose-code:text-primary prose-blockquote:font-normal prose-img:rounded-lg prose-img:m-0 prose-headings:text-left dark:prose-invert'>
         <h1 className='font-medium inline mb-0'>{post.title}</h1>
         <div className='text-xs uppercase text-gray-400 flex items-center gap-4 mb-6 md:mb-10'>
           <time>{post.publishedAt}</time>&mdash;
           <p>{post.timeToRead}</p>
         </div>
-        <div className='text-justify '>
+        <div className='text-justify'>
           <MDXContent components={{ BannerImage, LinkInPage }} />
         </div>
       </article>

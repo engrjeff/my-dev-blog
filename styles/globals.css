@@ -2,3 +2,9 @@
 @import './syntax-highlight.css';
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  html {
+    @apply scroll-smooth scroll-p-24 md:scroll-p-28;
+  }
+}
