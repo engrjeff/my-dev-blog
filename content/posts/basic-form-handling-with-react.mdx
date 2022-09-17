@@ -62,7 +62,7 @@ function App() {
 
 The next step is to gather all the input values and submit them as an object to the server. For this we are adding a submit handler for the form.
 
-```tsx showLineNumbers {9-13, 16}
+```tsx showLineNumbers {9-15, 18}
 import React from 'react';
 import { createUser } from '../some-fake-user-api-service';
 
@@ -71,10 +71,12 @@ function App() {
   const [firstName, setFirstName] = React.useState('');
   const [lastName, setLastName] = React.useState('');
 
-  const handleSubmit = async () => {
+  const handleSubmit = (e) => {
+    e.preventDefault(); // what `default` are we preventing anyway? 🧐
+
     const userData = { firstName, lastName };
 
-    await createUser(userData);
+    createUser(userData);
   };
 
   return (
@@ -101,7 +103,7 @@ We'll address these questions in another post. For now, let's refactor our form 
 
 As you can see, each input of our form has a dedicated state and state setter. This approach is not good for bigger forms. Let's improve our current implementation by just using a single object called `fields`.
 
-```tsx showLineNumbers {6-9, 12}
+```tsx showLineNumbers {5-9, 14}
 import React from 'react';
 import { createUser } from '../some-fake-user-api-service';
 
@@ -112,10 +114,10 @@ function App() {
     lastName: '',
   });
 
-  const handleSubmit = async () => {
-    const userData = { ...fields };
+  const handleSubmit = (e) => {
+    e.preventDefault();
 
-    await createUser(userData);
+    createUser(fields);
   };
 
   // render markup here...
@@ -146,10 +148,10 @@ function App() {
     setFields((oldValues) => ({ ...oldValues, [name]: value }));
   };
 
-  const handleSubmit = async () => {
-    const userData = { ...fields };
+  const handleSubmit = (e) => {
+    e.preventDefault();
 
-    await createUser(userData);
+    createUser(fields);
   };
 
   return (
