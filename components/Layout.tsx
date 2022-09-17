@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import type { ReactNode } from 'react';
 import { NextSeo } from 'next-seo';
+import { bannerUrls } from '@lib/constants';
 
 const routes = [
   { label: 'Home', path: '/' },
@@ -19,7 +20,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
         title='Jeff Segovia'
         description='The dev blog and portfolio website of Engineer Jeff Segovia'
         openGraph={{
-          images: [{ url: '/home-banner.png', alt: 'Jeff Segovia Dev', width: 1200, height: 630 }],
+          images: [{ url: bannerUrls.home, alt: 'Jeff Segovia Dev', width: 1200, height: 630 }],
         }}
         twitter={{
           handle: '@engrjeff',

@@ -2,6 +2,7 @@ import type { GetStaticProps, NextPage, InferGetStaticPropsType } from 'next';
 import { NextSeo } from 'next-seo';
 import BlogCard from '@components/BlogCard';
 import getSortedPosts, { PostWithoutBody } from '@lib/getSortedPosts';
+import { bannerUrls } from '@lib/constants';
 
 type BlogsPageProps = InferGetStaticPropsType<typeof getStaticProps>;
 
@@ -11,7 +12,7 @@ const BlogsPage: NextPage<BlogsPageProps> = ({ posts }) => {
       <NextSeo
         title='Blogs - Jeff Segovia'
         openGraph={{
-          images: [{ url: '/blog-banner.png', alt: 'Jeff Segovia Blog', width: 1200, height: 630 }],
+          images: [{ url: bannerUrls.blog, alt: 'Jeff Segovia Blog', width: 1200, height: 630 }],
         }}
       />
       <div className='space-y-2 mb-6'>
