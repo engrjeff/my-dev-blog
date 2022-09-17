@@ -1,11 +1,13 @@
-import type { NextPage } from 'next';
+import type { GetStaticProps, NextPage, InferGetStaticPropsType } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 
-import { allPosts } from '@contentlayer/generated';
 import BlogCard from '@components/BlogCard';
+import getSortedPosts, { type PostWithoutBody } from '@lib/getSortedPosts';
 
-const Home: NextPage = () => {
+type HomePageProps = InferGetStaticPropsType<typeof getStaticProps>;
+
+const Home: NextPage<HomePageProps> = ({ posts }) => {
   return (
     <div>
       <section className='flex flex-col gap-4'>
@@ -39,7 +41,7 @@ const Home: NextPage = () => {
       <section className='my-10'>
         <h2 className='text-4xl font-bold mb-6'>Recent Posts</h2>
         <div className='grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-10'>
-          {allPosts.slice(0, 3).map((post) => (
+          {posts.map((post) => (
             <BlogCard key={post._id} post={post} />
           ))}
         </div>
@@ -56,3 +58,13 @@ const Home: NextPage = () => {
 };
 
 export default Home;
+
+export const getStaticProps: GetStaticProps<{ posts: PostWithoutBody[] }> = () => {
+  const posts = getSortedPosts(3);
+
+  return {
+    props: {
+      posts,
+    },
+  };
+};
