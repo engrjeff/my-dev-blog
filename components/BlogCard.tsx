@@ -31,10 +31,8 @@ const BlogCard = ({ post }: { post: Omit<Post, 'body'> }) => {
         </div>
         <time className='text-xs uppercase text-gray-400'>{post.publishedAt}</time>
         <Link href={post.url}>
-          <a>
-            <h5 className='text-lg font-bold group-hover:text-primary transition-colors text-gray-900 dark:text-gray-100'>
-              {post.title}
-            </h5>
+          <a className='text-lg font-bold group-hover:text-primary transition-colors text-gray-900 dark:text-gray-100'>
+            {post.title}
           </a>
         </Link>
         <p className='hidden text-sm text-gray-900 dark:text-gray-100'>

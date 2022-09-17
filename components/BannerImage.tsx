@@ -17,6 +17,7 @@ const BannerImage = ({ src, alt }: BannerImageProps) => {
         layout='fill'
         objectFit='cover'
         objectPosition='center'
+        className='rounded-lg'
       />
     </div>
   );

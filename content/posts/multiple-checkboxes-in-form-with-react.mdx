@@ -1,0 +1,315 @@
+---
+title: Multiple Checkboxes In Form With ReactJS
+author: Jeff Segovia
+bannerUrl: https://res.cloudinary.com/abide-in-the-vine/image/upload/v1663421900/jeff%20dev%20blog/multiple-checkboxes-blog/multiple-checkboxes-react_fqdxpi.png
+publishedAt: Sept 17, 2022
+tags:
+  - ReactJS
+  - form
+---
+
+export const bannerUrl =
+  'https://res.cloudinary.com/abide-in-the-vine/image/upload/v1663421900/jeff%20dev%20blog/multiple-checkboxes-blog/multiple-checkboxes-react_fqdxpi.png';
+
+<BannerImage src={bannerUrl} alt='Multiple Checkboxes In Form With ReactJS' />
+
+One of the many input types in HTML5 is the **checkbox**. It has several use-cases in the real world and so knowing how to work with it is an essential skill or knowledge to have as a developer. In this post I'll show you how to work with checkboxes in your React app.
+
+## Single Checkbox
+
+Let's start with the most basic - a single checkbox in a form. In this contrived example, we'll create a simple controlled input. The goal is to simply hold the value and manage the state of an `isActive` boolean flag.
+
+```tsx title="App.tsx" showLineNumbers
+import React from 'react';
+
+export default function App() {
+  const [isActive, setIsActive] = React.useState(false);
+
+  const handleChange: React.ChangeEventHandler<HTMLInputElement> = (e) = {
+    setIsActive(e.currentTarget.checked)
+  }
+
+  return (
+    <form>
+      <input type='checkbox' name='isActive' id='isActive' checked={isActive} onChange={handleChange} />
+      <label htmlFor='isActive'>Is this member active?</label>
+    </form>
+  );
+}
+```
+
+It's that simple. For additional info, take note also of the proper labeling of our input for accessibility purpose. We have added the `htmlFor` in the `label` element which points to the `id` of the checkbox. And since we're using Typescript here, note the type annotation of the `handleChange` function.
+
+## Example 1: Picking from a list
+
+Now what if we have a scenario where we need to pick some items from a particular list of options? This is one perfect opportunity to use multiple checkboxes in our form. But how do we make this work? Let us see.
+
+In this example, the goal is to pick items from a list of Bible books. (yes, I am a Christian!)
+
+For this we'll try two approaches. One is using `React.useState` and the other is by simply using some native web Javascript methods.
+
+### 1. Using React `useState`
+
+First, here's our Bible books options. It's simply an array of string.
+
+```tsx title="MultipleCheckbox.tsx" showLineNumbers
+const bibleBooks = [
+  'Genesis',
+  'Exodus',
+  'Psalms',
+  'Proverbs',
+  'Isaiah',
+  'John',
+  'Matthew',
+  'Romans',
+  'Philippians',
+];
+```
+
+Then we create the form. Inside the form is a list of checkboxes which we get by looping through `bibleBooks`.
+
+```tsx title="MultipleCheckbox.tsx" showLineNumbers
+function MultipleCheckbox() {
+  return (
+    <form>
+      <h1>My Favorite Bible Books</h1>
+      <ul>
+        {bibleBooks.map((item) => (
+          <li key={item}>
+            <div>
+              <input type='checkbox' name={item} id={item} />
+              <label htmlFor={item}>{item}</label>
+            </div>
+          </li>
+        ))}
+      </ul>
+      <button type='submit'>Save My Picks!</button>
+    </form>
+  );
+}
+```
+
+It renders like this:
+
+![pick from a list checkbox example][pic1]
+
+Now, let's add the state and some handlers.
+
+```tsx title="MultipleCheckbox.tsx" showLineNumbers {2, 4-12, 26}
+function MultipleCheckbox() {
+  const [picks, setPicks] = React.useState<string[]>([]);
+
+  const handlePickChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
+    const { checked, name } = e.currentTarget;
+
+    if (checked) {
+      setPicks((oldPicks) => [...oldPicks, name]);
+    } else {
+      setPicks((oldPicks) => oldPicks.filter((item) => item !== name));
+    }
+  };
+
+  const handleSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
+    e.preventDefault();
+    console.log(picks);
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <h1>My Favorite Bible Books</h1>
+      <ul>
+        {bibleBooks.map((item) => (
+          <li key={item}>
+            <div>
+              <input type='checkbox' name={item} id={item} onChange={handlePickChange} />
+              <label htmlFor={item}>{item}</label>
+            </div>
+          </li>
+        ))}
+      </ul>
+      <button type='submit'>Save My Picks!</button>
+    </form>
+  );
+}
+```
+
+We attached the `handlePickChange` function to each checkbox's `onChange` prop. When triggered, we just check if the checkbox is checked by accessing the `checked` property from `e.currentTarget`. If checked, we're simply adding the book to the old picks. If not checked, we're just filtering out the picked book. Notice that we can get the correct book name since we have put a `name` value to each checkbox. When we submit the form, what we'll get is an array of strings like the ff.:
+
+```tsx showLineNumbers
+['Genesis', 'Psalms', 'John', 'Matthew'];
+```
+
+### 2. Using `FormData`
+
+For this we'll use a Web API called `FormData`. Note that this approach works with any HTML5 form inputs.
+
+The change that we need to do is to remove first the React state and the change handler, leaving only our `handleSubmit` function.
+
+```tsx title="MultipleCheckbox.tsx" showLineNumbers
+function MultipleCheckbox() {
+  const handleSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
+    e.preventDefault();
+    console.log(picks);
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <h1>My Favorite Bible Books</h1>
+      <ul>
+        {bibleBooks.map((item) => (
+          <li key={item}>
+            <div>
+              <input type='checkbox' name={item} id={item} />
+              <label htmlFor={item}>{item}</label>
+            </div>
+          </li>
+        ))}
+      </ul>
+      <button type='submit'>Save My Picks!</button>
+    </form>
+  );
+}
+```
+
+In order to get the selected picks, we'll just add the ff. code inside the submit function.
+
+```tsx title="MultipleCheckbox.tsx" showLineNumbers {4-5}
+const handleSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
+  e.preventDefault();
+
+  const formData = new FormData(e.currentTarget);
+  const values = Object.fromEntries(formData.entries());
+
+  console.log(values);
+};
+```
+
+But we have a tiny problem here. When we submit the form, what we'll get is like the following:
+
+```tsx showLineNumbers
+{ 'Genesis': 'on', 'John' : 'on', 'Proverbs': 'on'}
+```
+
+Did you notice that? It's because `formData` gives us an object where the key is the name of the input. In this case the key is any of the `bibleBooks` while the value is `on` (this is the _checked_ value for checkbox that formData gives us).
+
+In this case, we don't want an object, we want an array of picks. Well the solution is pretty simple. We'll just get the keys of the object that formData gives us and that's it!
+
+```tsx title="MultipleCheckbox.tsx" showLineNumbers {7}
+const handleSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
+  e.preventDefault();
+
+  const formData = new FormData(e.currentTarget);
+  const values = Object.fromEntries(formData.entries());
+
+  const neededValues = Object.keys(values);
+
+  console.log(neededValues);
+};
+```
+
+## Example 2: Manage Access Rights Example
+
+Let's pretend that we are an admin of certain management system and one of our responsibilities is to manage the access writes of our users. Our user's access object should look like this:
+
+```tsx showLineNumbers
+const defaultAccess = {
+  view: true,
+  create: true,
+  update: true,
+  delete: true,
+  import: true,
+  export: true,
+};
+
+// we can get the type of the defaultAccess object thru this
+// we'll use this later
+type AccessObj = typeof defaultAccess;
+```
+
+Our form will be similar to the previous example. But since we're no longer working with an array now but with an object, one way we can loop through our access object is by using `Object.keys`:
+
+```tsx title="AccessRights.tsx" showLineNumbers {2, 14}
+function AccessRights() {
+  const [access, setAccess] = React.useState<AccessObj>(defaultAccess);
+
+  const handleSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
+    e.preventDefault();
+
+    console.log(access);
+  };
+
+  return (
+    <form>
+      <h1>User Access Rights</h1>
+      <ul>
+        {Object.keys(access).map((item) => (
+          <li key={item}>
+            <div>
+              <input type='checkbox' name={item} id={item} />
+              <label htmlFor={item}>{item}</label>
+            </div>
+          </li>
+        ))}
+      </ul>
+      <button type='submit'>Save Access</button>
+    </form>
+  );
+}
+```
+
+Our form looks like this:
+
+![manage access rights with checkbox example][pic2]
+
+Let us add now the change handler:
+
+```tsx title="AccessRights.tsx" showLineNumbers {4-7, 26-27}
+function AccessRights() {
+  const [access, setAccess] = React.useState<AccessObj>(defaultAccess);
+
+  const handleAccessChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
+    const { name, checked } = e.currentTarget;
+    setAccess((prev) => ({ ...prev, [name]: checked }));
+  };
+
+  const handleSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
+    e.preventDefault();
+
+    console.log(access);
+  };
+
+  return (
+    <form>
+      <h1>User Access Rights</h1>
+      <ul>
+        {Object.keys(access).map((item) => (
+          <li key={item}>
+            <div>
+              <input
+                type='checkbox'
+                name={item}
+                id={item}
+                checked={access[item as keyof AccessObj]}
+                onChange={handleAccessChange}
+              />
+              <label htmlFor={item}>{item}</label>
+            </div>
+          </li>
+        ))}
+      </ul>
+      <button type='submit'>Save Access</button>
+    </form>
+  );
+}
+```
+
+For every checkbox that is being toggled, we are setting the value of one of the properties of our `access` state. We do this by using the `name` of the checkbox as a dynamic key to which the `checked` value is assigned. Moreover, assigning `access[item as keyof AccessObj]` (line 26) to the `checked` prop of the checkbox enables it to show the proper state at any point in time.
+
+And that's it!
+
+This is what I can share about multiple checkboxes for now. Happy coding!
+
+-jep
+
+[pic1]: https://res.cloudinary.com/abide-in-the-vine/image/upload/v1663418426/jeff%20dev%20blog/multiple-checkboxes-blog/Screen_Shot_2022-09-17_at_8.40.13_PM_u1vh42.png
+[pic2]: https://res.cloudinary.com/abide-in-the-vine/image/upload/v1663421090/jeff%20dev%20blog/multiple-checkboxes-blog/Screen_Shot_2022-09-17_at_9.24.44_PM_zpigpx.png
