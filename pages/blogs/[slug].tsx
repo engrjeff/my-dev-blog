@@ -6,12 +6,13 @@ import { NextSeo } from 'next-seo';
 
 import BannerImage from '@components/BannerImage';
 import LinkInPage from '@components/LinkInPage';
+import ScrollToTopButton from '@components/ScrollToTopButton';
 
 const BlogScreen: NextPage<{ post: Post }> = ({ post }) => {
   const MDXContent = useMDXComponent(post.body.code);
 
   return (
-    <div>
+    <div className='relative'>
       <NextSeo
         title={post.title}
         openGraph={{
@@ -56,6 +57,7 @@ const BlogScreen: NextPage<{ post: Post }> = ({ post }) => {
           <MDXContent components={{ BannerImage, LinkInPage }} />
         </div>
       </article>
+      <ScrollToTopButton />
     </div>
   );
 };
