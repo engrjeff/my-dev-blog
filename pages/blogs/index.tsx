@@ -1,7 +1,7 @@
-import { allPosts, type Post } from '@contentlayer/generated';
 import type { GetStaticProps, NextPage, InferGetStaticPropsType } from 'next';
 import { NextSeo } from 'next-seo';
 import BlogCard from '@components/BlogCard';
+import getSortedPosts, { PostWithoutBody } from '@lib/getSortedPosts';
 
 type BlogsPageProps = InferGetStaticPropsType<typeof getStaticProps>;
 
@@ -35,22 +35,12 @@ const BlogsPage: NextPage<BlogsPageProps> = ({ posts }) => {
   );
 };
 
-export const getStaticProps: GetStaticProps<{ posts: Omit<Post, 'body'>[] }> = () => {
+export const getStaticProps: GetStaticProps<{ posts: PostWithoutBody[] }> = () => {
+  const posts = getSortedPosts();
+
   return {
     props: {
-      posts: allPosts.map<Omit<Post, 'body'>>((post) => ({
-        _id: post._id,
-        _raw: post._raw,
-        author: post.author,
-        bannerUrl: post.bannerUrl,
-        publishedAt: post.publishedAt,
-        slug: post.slug,
-        tags: post.tags,
-        timeToRead: post.timeToRead,
-        title: post.title,
-        url: post.url,
-        type: post.type,
-      })),
+      posts,
     },
   };
 };
