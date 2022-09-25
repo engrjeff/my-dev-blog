@@ -12,7 +12,7 @@ const Search = ({ query, onSearch }: SearchProps) => {
         onReset={(e) => onSearch('')}
         type='search'
         placeholder='Search'
-        className='pl-12 pr-4 h-14 bg-transparent placeholder:text-gray-600 border border-gray-600 rounded-full outline-transparent duration-150 transition-colors hover:border-gray-700 focus:border-primary'
+        className='pl-12 pr-4 h-14 bg-transparent placeholder:text-gray-600 border border-gray-600 rounded-full outline-primary duration-150 transition-colors hover:border-gray-700 focus:border-transparent'
       />
       <svg
         xmlns='http://www.w3.org/2000/svg'
