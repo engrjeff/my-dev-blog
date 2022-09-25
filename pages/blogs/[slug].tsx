@@ -5,6 +5,7 @@ import { NextSeo } from 'next-seo';
 
 import BannerImage from '@components/BannerImage';
 import LinkInPage from '@components/LinkInPage';
+import RelativeLink from '@components/RelativeLink';
 import ScrollToTopButton from '@components/ScrollToTopButton';
 import BackButton from '@components/BackButton';
 import Article from '@components/Article';
@@ -35,7 +36,7 @@ const BlogScreen: NextPage<{ post: Post }> = ({ post }) => {
           <p>{post.timeToRead}</p>
         </div>
         <div className='text-justify'>
-          <MDXContent components={{ BannerImage, LinkInPage }} />
+          <MDXContent components={{ BannerImage, LinkInPage, RelativeLink }} />
         </div>
       </Article>
       <ScrollToTopButton />
