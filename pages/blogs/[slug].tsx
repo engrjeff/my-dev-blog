@@ -9,6 +9,7 @@ import RelativeLink from '@components/RelativeLink';
 import ScrollToTopButton from '@components/ScrollToTopButton';
 import BackButton from '@components/BackButton';
 import Article from '@components/Article';
+import Alert from '@components/Alert';
 
 const BlogScreen: NextPage<{ post: Post }> = ({ post }) => {
   const MDXContent = useMDXComponent(post.body.code);
@@ -36,7 +37,7 @@ const BlogScreen: NextPage<{ post: Post }> = ({ post }) => {
           <p>{post.timeToRead}</p>
         </div>
         <div className='text-justify'>
-          <MDXContent components={{ BannerImage, LinkInPage, RelativeLink }} />
+          <MDXContent components={{ BannerImage, LinkInPage, RelativeLink, Alert }} />
         </div>
       </Article>
       <ScrollToTopButton />
