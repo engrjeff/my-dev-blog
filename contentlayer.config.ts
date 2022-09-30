@@ -90,9 +90,32 @@ const Snippet = defineDocumentType(() => ({
   },
 }));
 
+const About = defineDocumentType(() => ({
+  name: 'About',
+  contentType: 'mdx',
+  filePathPattern: 'about/*.mdx',
+  fields: {
+    title: {
+      type: 'string',
+      description: 'The title of the about page',
+      required: true,
+    },
+    description: {
+      type: 'string',
+      description: 'A short description of the about page',
+      required: true,
+    },
+    author: {
+      type: 'string',
+      description: 'The author of the about page',
+      required: true,
+    },
+  },
+}));
+
 export default makeSource({
   contentDirPath: 'content',
-  documentTypes: [Post, Snippet],
+  documentTypes: [Post, Snippet, About],
   mdx: {
     rehypePlugins: [
       [rehypePrettyCode, rehypePrettyCodeOptions],
