@@ -9,4 +9,9 @@
     -webkit-tap-highlight-color: transparent;
     @apply scroll-smooth scroll-p-24 md:scroll-p-28;
   }
+
+  html,
+  body {
+    overflow-x: hidden;
+  }
 }
