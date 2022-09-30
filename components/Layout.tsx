@@ -1,19 +1,11 @@
 import Link from 'next/link';
-import { useRouter } from 'next/router';
 import type { ReactNode } from 'react';
 import { NextSeo } from 'next-seo';
 import { bannerUrls } from '@lib/constants';
-
-const routes = [
-  { label: 'Home', path: '/' },
-  { label: 'Blogs', path: '/blogs' },
-  { label: 'Snippets', path: '/snippets' },
-  { label: 'About', path: '/about' },
-];
+import MobileMenu from './MobileMenu';
+import NavLinks from './NavLinks';
 
 const Layout = ({ children }: { children: ReactNode }) => {
-  const { pathname } = useRouter();
-
   return (
     <div className='bg-white dark:bg-darkest'>
       <NextSeo
@@ -35,19 +27,8 @@ const Layout = ({ children }: { children: ReactNode }) => {
               jeffsegovia<span className='text-primary'>.dev</span>
             </a>
           </Link>
-          <div className='hidden md:flex items-center gap-3'>
-            {routes.map((route) => (
-              <Link key={route.label} href={route.path}>
-                <a
-                  className={`px-2 py-1 rounded-md ${
-                    pathname === route.path ? 'text-primary' : 'text-gray-800 dark:text-gray-200'
-                  }`}
-                >
-                  {route.label}
-                </a>
-              </Link>
-            ))}
-          </div>
+          <NavLinks />
+          <MobileMenu />
         </nav>
       </header>
       <main className='py-6 md:py-10 container max-w-6xl'>{children}</main>
