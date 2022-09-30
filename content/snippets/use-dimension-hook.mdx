@@ -1,0 +1,51 @@
+---
+title: useDimension Hook
+description: A hook for getting an element's width and height
+author: Jeff Segovia
+tags:
+  - ReactJS
+  - hook
+---
+
+## Code Snippet
+
+```tsx title="useDimension.ts" showLineNumbers
+import { useState, useEffect } from 'react';
+
+export type Dimension = {
+  width: number;
+  height: number;
+};
+
+export default function useDimension(elementId: string) {
+  const [dimension, setDimension] = useState<Dimension>({ width: 0, height: 0 });
+
+  useEffect(() => {
+    const resizeCallback = () => {
+      const element = document.getElementById(elementId);
+
+      if (!element) return;
+
+      const { width, height } = element.getBoundingClientRect();
+
+      setDimension({ width, height });
+    };
+
+    resizeCallback();
+
+    window.addEventListener('resize', resizeCallback);
+
+    return () => window.removeEventListener('resize', resizeCallback);
+  }, [elementId]);
+
+  return dimension;
+}
+```
+
+## Usage
+
+To use this hook, just pass an element id as an argument:
+
+```tsx showLineNumbers
+const { width, height } = useDimension('my-element-id');
+```
