@@ -48,7 +48,10 @@ const MobileMenu = () => {
 
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const closeMenu = () => setMenuOpen(false);
+  const closeMenu = () => {
+    document.body.classList.remove('overflow-hidden');
+    setMenuOpen(false);
+  };
 
   const toggleMenu = () => {
     document.body.classList.toggle('overflow-hidden');
@@ -60,7 +63,11 @@ const MobileMenu = () => {
 
   return (
     <div className='flex items-center md:hidden'>
-      <button aria-label='toggle menu' onClick={toggleMenu}>
+      <button
+        aria-label='toggle menu'
+        onClick={toggleMenu}
+        className='p-2 rounded-full hover:bg-gray-800'
+      >
         {menuOpen ? <CloseIcon /> : <MenuIcon />}
       </button>
       <div
@@ -68,7 +75,7 @@ const MobileMenu = () => {
           menuOpen ? 'block' : 'hidden'
         } fixed h-screen w-screen bg-white dark:bg-darkest top-[77px] right-0`}
       >
-        <div className='flex flex-col' onClick={closeMenu}>
+        <div className='flex flex-col border-t border-gray-800' onClick={closeMenu}>
           {routes.map((route) => (
             <Link key={route.label} href={route.path}>
               <a
