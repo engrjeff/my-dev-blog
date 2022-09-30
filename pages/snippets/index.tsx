@@ -22,7 +22,7 @@ const SnippetsPage: NextPage<SnippetsPageProps> = ({ snippets }) => {
         </p>
       </section>
       <section className='my-10'>
-        <div className='grid md:grid-cols-2 gap-4'>
+        <div className='grid md:grid-cols-2 gap-8'>
           {snippets.map((snippet) => (
             <SnippetCard key={snippet._id} snippet={snippet} />
           ))}
