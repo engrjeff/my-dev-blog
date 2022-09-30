@@ -52,9 +52,47 @@ const Post = defineDocumentType(() => ({
   },
 }));
 
+const Snippet = defineDocumentType(() => ({
+  name: 'Snippet',
+  contentType: 'mdx',
+  filePathPattern: 'snippets/*.mdx',
+  fields: {
+    title: {
+      type: 'string',
+      description: 'The title of the snippet',
+      required: true,
+    },
+    description: {
+      type: 'string',
+      description: 'A short description of the snippet',
+      required: true,
+    },
+    author: {
+      type: 'string',
+      description: 'The author of the snippet',
+      required: true,
+    },
+    tags: {
+      type: 'list',
+      of: { type: 'string' },
+      required: true,
+    },
+  },
+  computedFields: {
+    slug: {
+      type: 'string',
+      resolve: (snippet) => snippet._raw.sourceFileName.replace(/\.mdx$/, ''),
+    },
+    url: {
+      type: 'string',
+      resolve: (snippet) => `/snippets/${snippet._raw.sourceFileName.replace(/\.mdx$/, '')}`,
+    },
+  },
+}));
+
 export default makeSource({
   contentDirPath: 'content',
-  documentTypes: [Post],
+  documentTypes: [Post, Snippet],
   mdx: {
     rehypePlugins: [
       [rehypePrettyCode, rehypePrettyCodeOptions],

@@ -5,6 +5,8 @@
 
 @layer base {
   html {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+    -webkit-tap-highlight-color: transparent;
     @apply scroll-smooth scroll-p-24 md:scroll-p-28;
   }
 }
