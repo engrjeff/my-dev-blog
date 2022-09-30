@@ -72,14 +72,14 @@ const MobileMenu = () => {
       </button>
       <div
         className={`${
-          menuOpen ? 'block' : 'hidden'
-        } fixed h-screen w-screen bg-white dark:bg-darkest top-[77px] right-0`}
+          menuOpen ? 'translate-x-0' : 'scale-x-0 translate-x-full'
+        } absolute h-screen w-screen bg-white dark:bg-darkest top-[89px] right-0 transition-transform duration-300`}
       >
-        <div className='flex flex-col border-t border-gray-800' onClick={closeMenu}>
+        <div className='flex flex-col' onClick={closeMenu}>
           {routes.map((route) => (
             <Link key={route.label} href={route.path}>
               <a
-                className={`px-4 py-4 border-b border-gray-800 text-center ${
+                className={`px-4 py-6 border-b border-gray-800 text-center text-lg ${
                   isActive(route.path) ? 'text-primary' : 'text-inherit'
                 }`}
               >
