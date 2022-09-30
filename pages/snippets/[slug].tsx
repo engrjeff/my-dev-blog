@@ -15,7 +15,7 @@ const SnippetScreen: NextPage<{ snippet: Snippet }> = ({ snippet }) => {
 
   return (
     <div className='relative'>
-      <NextSeo title={snippet.title} />
+      <NextSeo title={snippet.title} description={snippet.description} />
       <BackButton backTo='/snippets' label='back to snippets list' />
       <Article>
         <h1 className='font-medium inline mb-0'>{snippet.title}</h1>
