@@ -62,18 +62,18 @@ const MobileMenu = () => {
     pathname === '/' ? router.pathname === pathname : router.pathname.includes(pathname);
 
   return (
-    <div className='flex items-center md:hidden overflow-hidden'>
+    <>
       <button
         aria-label='toggle menu'
         onClick={toggleMenu}
-        className='p-2 rounded-full hover:bg-gray-800'
+        className='p-2 rounded-full hover:bg-gray-800 md:hidden'
       >
         {menuOpen ? <CloseIcon /> : <MenuIcon />}
       </button>
       <div
         className={`${
-          menuOpen ? 'translate-x-0' : 'translate-x-full'
-        } fixed h-screen w-screen bg-white dark:bg-darkest top-[89px] right-0 transition-transform duration-300`}
+          menuOpen ? 'translate-x-0' : '-translate-x-full'
+        } md:hidden absolute h-screen w-screen bg-white dark:bg-darkest top-[89px] left-0 transition-transform duration-300`}
       >
         <div className='flex flex-col' onClick={closeMenu}>
           {routes.map((route) => (
@@ -89,7 +89,7 @@ const MobileMenu = () => {
           ))}
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

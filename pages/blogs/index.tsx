@@ -38,6 +38,7 @@ const BlogsPage: NextPage<BlogsPageProps> = ({ posts, tags }) => {
     <>
       <NextSeo
         title='Blogs - Jeff Segovia'
+        description='Comprehensive blog posts about web development by Jeff Segovia'
         openGraph={{
           images: [{ url: bannerUrls.blog, alt: 'Jeff Segovia Blog', width: 1200, height: 630 }],
         }}
