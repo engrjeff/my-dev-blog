@@ -19,6 +19,7 @@ export default function getSortedPosts(n?: number): PostWithoutBody[] {
       _raw: post._raw,
       author: post.author,
       bannerUrl: post.bannerUrl,
+      description: post.description,
       publishedAt: post.publishedAt,
       slug: post.slug,
       tags: post.tags,

@@ -15,6 +15,11 @@ const Post = defineDocumentType(() => ({
       description: 'The title of the post',
       required: true,
     },
+    description: {
+      type: 'string',
+      description: 'The description or excerpt of the post',
+      required: true,
+    },
     author: {
       type: 'string',
       description: 'The author of the post',
