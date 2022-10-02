@@ -18,6 +18,7 @@ const BlogScreen: NextPage<{ post: Post }> = ({ post }) => {
     <div className='relative'>
       <NextSeo
         title={post.title}
+        description={post.description}
         openGraph={{
           images: [
             {
