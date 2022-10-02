@@ -20,7 +20,7 @@ function MyApp({ Component, pageProps }: AppProps) {
         <meta name='viewport' content='width=device-width, initial-scale=1, user-scalable=no' />
       </Head>
       <Script
-        src='https://www.googletagmanager.com/gtag/js?id=G-4J19Q616JK'
+        src='https://www.googletagmanager.com/gtag/js?id=G-XT57N1W2PF'
         strategy='afterInteractive'
       />
       <Script id='google-analytics' strategy='afterInteractive'>
@@ -29,7 +29,7 @@ function MyApp({ Component, pageProps }: AppProps) {
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
 
-        gtag('config', 'G-4J19Q616JK');
+        gtag('config', 'G-XT57N1W2PF');
         `}
       </Script>
 

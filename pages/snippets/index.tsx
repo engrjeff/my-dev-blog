@@ -10,7 +10,7 @@ const SnippetsPage: NextPage<SnippetsPageProps> = ({ snippets }) => {
   return (
     <>
       <NextSeo
-        title='Snippets | Jeff Segovia'
+        title='Snippets - Jeff Segovia'
         description='A collection of code snippets that I have used or found essential in my coding
           journey.'
       />
