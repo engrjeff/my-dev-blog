@@ -3,6 +3,7 @@ import type { AppProps } from 'next/app';
 import { ThemeProvider } from 'next-themes';
 import Layout from '@components/Layout';
 import Head from 'next/head';
+import Script from 'next/script';
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
@@ -18,6 +19,20 @@ function MyApp({ Component, pageProps }: AppProps) {
         <meta name='theme-color' content='#0b0f1a' />
         <meta name='viewport' content='width=device-width, initial-scale=1, user-scalable=no' />
       </Head>
+      <Script
+        src='https://www.googletagmanager.com/gtag/js?id=G-4J19Q616JK'
+        strategy='afterInteractive'
+      />
+      <Script id='google-analytics' strategy='afterInteractive'>
+        {`
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-4J19Q616JK');
+        `}
+      </Script>
+
       <Layout>
         <Component {...pageProps} />
       </Layout>
