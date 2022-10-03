@@ -10,7 +10,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
     <div className='bg-white dark:bg-darkest'>
       <NextSeo
         title='Jeff Segovia'
-        description='The dev blog and portfolio website of Engineer Jeff Segovia'
+        description='I am Jeff, a software engineer from the Philippines and this is my official website and dev blog where I write articles and tutorials about web development. My content is mostly focused on ReactJs.'
         openGraph={{
           images: [{ url: bannerUrls.home, alt: 'Jeff Segovia Dev', width: 1200, height: 630 }],
         }}

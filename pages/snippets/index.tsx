@@ -14,8 +14,8 @@ const SnippetsPage: NextPage<SnippetsPageProps> = ({ snippets }) => {
         description='A collection of code snippets that I have used or found essential in my coding
           journey.'
       />
-      <section className='space-y-2 mb-6'>
-        <h2 className='text-4xl font-bold text-gray-900 dark:text-white'>Snippets</h2>
+      <section className='space-y-4 mb-6'>
+        <h1 className='text-4xl md:text-5xl  font-bold text-gray-900 dark:text-white'>Snippets</h1>
         <p className='text-gray-600 dark:text-gray-400'>
           This is a collection of code snippets that I have used or found essential in my coding
           journey. <br /> Hope this list can be useful to you as well. 📙
