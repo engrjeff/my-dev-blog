@@ -1,0 +1,214 @@
+---
+title: Scroll-To-Top Functionality With React
+description: Learn how to create a custom React hook for scroll-to-top functionality
+author: Jeff Segovia
+bannerUrl: https://res.cloudinary.com/abide-in-the-vine/image/upload/v1664858835/jeff%20dev%20blog/jeffsegovia.dev_1_uuduyq.png
+publishedAt: Oct 4, 2022
+tags:
+  - ReactJS
+  - hooks
+---
+
+export const bannerUrl =
+  'https://res.cloudinary.com/abide-in-the-vine/image/upload/v1664858835/jeff%20dev%20blog/jeffsegovia.dev_1_uuduyq.png';
+
+<BannerImage src={bannerUrl} alt='Scroll-To-Top Functionality With React' />
+
+Your webpage has lots of content. Maybe it has a long article. Maybe it has a long gallery of high-quality images. Surely, you want your users to skim or read all the way through the page. But sometimes, users want to immediately go back to the top of the page. They don't want to scroll manually up to the top of the page. As developers, we must provide the users of our web apps the best possible experience. For the aforementioned scenario above, a better UX is to give the user a way to quickly go to the top of the page.
+
+## Scroll-to-top
+
+In this blog site of mine, it is inevitable that I'll have contents which go beyond the maximum height of any screen. For this reason, I have added a `scroll-to-top` button at the bottom right of the screen. When that button is clicked, the page will automatically be scrolled up to the top of the page in a smooth manner.
+
+I'd love to share with you how I achieved that functionality.
+
+## The Button
+
+The button is just a simple one. It has `position: fix` so that it is completely removed from the natural document flow. Inside it is a _chevron_ `svg` icon that points upward (similar to what you see in this page). Note that I'm using <LinkInPage href='https://tailwindcss.com/' text='Tailwind CSS' /> to style my button but you can use any valid way for styling yours.
+
+```tsx title="ScrollToTopButton.tsx" showLineNumbers
+const ScrollToTopButton = () => {
+  return (
+    <button
+      aria-label='scroll to top'
+      className='w-12 h-12 transition-transform duration-200 flex fixed right-10 bottom-10 bg-primary rounded-full shadow-lg shadow-gray-900 justify-center items-center'
+    >
+      <svg
+        xmlns='http://www.w3.org/2000/svg'
+        fill='none'
+        viewBox='0 0 24 24'
+        strokeWidth={2}
+        stroke='currentColor'
+        className='w-6 h-6'
+      >
+        <path strokeLinecap='round' strokeLinejoin='round' d='M4.5 15.75l7.5-7.5 7.5 7.5' />
+      </svg>
+    </button>
+  );
+};
+
+export default ScrollToTopButton;
+```
+
+Next, let's add a `scroll` event listener to the `window` object. This is a good use-case for `useEffect` since we want the listener to be added as soon as the component is mounted.
+
+```tsx title="ScrollToTopButton.tsx" showLineNumbers
+import { useEffect } from 'react';
+
+const ScrollToTopButton = () => {
+  useEffect(() => {
+    const scrollCallback = () => {
+      const scrolledFromTop = window.scrollY;
+    };
+
+    window.addEventListener('scroll', scrollCallback);
+
+    scrollCallback();
+
+    // clean-up function
+    return () => {
+      window.removeEventListener('scroll', scrollCallback);
+    };
+  }, []);
+
+  // render here ...
+};
+
+export default ScrollToTopButton;
+```
+
+Let me explain what's happening here. First, we defined a callback function called `scrollCallback`. Its job is to simply get the `scrollY` poroperty of the `window` object. The `scrollY` property is the number of pixels that the document is currently scrolled vertically. In line 9, we are assigning that callback to be the function to be called once the page is scrolled. In line 11, we invoke the `scrollCallback` function so that we can know immediately the how much is scrolled from top on first mount. Lastly, our useEffect returns a clean-up function to avoid unintended memory leaks.
+
+<Alert>
+  To learn more about **window.scrollY** go to
+  <LinkInPage
+    href='https://developer.mozilla.org/en-US/docs/Web/API/Window/scrollY'
+    text='this link from MDN'
+  />.
+</Alert>
+
+But the implementation does not stop there. What we want is to only show the button if a certain scroll threshold has been reached. For this we need a state.
+
+```tsx title="ScrollToTopButton.tsx" showLineNumbers {1, 4, 9, 26-27}
+import { useEffect, useState } from 'react';
+
+const ScrollToTopButton = () => {
+  const [shown, setShown] = useState(false);
+
+  useEffect(() => {
+    const scrollCallback = () => {
+      const scrolledFromTop = window.scrollY;
+      setShown(() => scrolledFromTop > 300);
+    };
+
+    window.addEventListener('scroll', scrollCallback);
+
+    scrollCallback();
+
+    // clean-up function
+    return () => {
+      window.removeEventListener('scroll', scrollCallback);
+    };
+  }, []);
+
+  return (
+    <button
+      aria-label='scroll to top'
+      className={`${
+        shown ? 'scale-100' : 'scale-0'
+      } w-12 h-12 transition-transform duration-200 flex fixed right-10 bottom-10 bg-primary rounded-full shadow-lg shadow-gray-900 justify-center items-center`}
+    >
+      {/* svg icon here*/}
+    </button>
+  );
+};
+
+export default ScrollToTopButton;
+```
+
+For this example, my threshold is 300. When `scrollY` is greater than that, `shown` state becomes true and false otherwise. Then, the way I hide the button is by simply assigning CSS transform (scale) to it depending on the `shown` state.
+
+Now, let's finally add `onClick` handler for the button so that when it's clicked, the page will be scrolled to top. And that is a simple as this:
+
+```tsx title="ScrollToTopButton.tsx" showLineNumbers {1-3, 8}
+const scrollToTop = () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
+return (
+  <button
+    aria-label='scroll to top'
+    onClick={scrollToTop}
+    className={`${
+      shown ? 'scale-100' : 'scale-0'
+    } w-12 h-12 transition-transform duration-200 flex fixed right-10 bottom-10 bg-primary rounded-full shadow-lg shadow-gray-900 justify-center items-center`}
+  >
+    {/* svg icon here*/}
+  </button>
+);
+```
+
+That's it! Simple right? But let's not just stop there. We can still do better by extracting a `useScrollToTop` hook. We do this as follows:
+
+```tsx title="useScrollToTop.ts" showLineNumbers {2, 21-23}
+import { useEffect, useState, useCallback } from 'react';
+
+export default function useScrollToTop(threshold: number = 300) {
+  const [shown, setShown] = useState(false);
+
+  useEffect(() => {
+    const scrollCallback = () => {
+      const scrolledFromTop = window.scrollY;
+      setShown(() => scrolledFromTop > threshold);
+    };
+
+    window.addEventListener('scroll', scrollCallback);
+
+    scrollCallback();
+
+    return () => {
+      window.removeEventListener('scroll', scrollCallback);
+    };
+  }, []);
+
+  const scrollToTop = useCallback(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  return { shown, scrollToTop };
+}
+```
+
+The only difference is that now we're accepting a `threshold` parameter so that the user of our hook is free to provide any positive number as a threshold. Also, note that `scrollToTop` is now memoized using `useCallback` and we're returning it with `shown` as an object.
+
+We use the hook like this:
+
+```tsx title="ScrollToTopButton.tsx" showLineNumbers {1, 4, 9, 26-27}
+import useScrollToTop from './useScrollToTop.ts';
+
+const ScrollToTopButton = () => {
+  const { shown, scrollToTop } = useScrollToTop(300);
+
+  return (
+    <button
+      aria-label='scroll to top'
+      onClick={scrollToTop}
+      className={`${
+        shown ? 'scale-100' : 'scale-0'
+      } w-12 h-12 transition-transform duration-200 flex fixed right-10 bottom-10 bg-primary rounded-full shadow-lg shadow-gray-900 justify-center items-center`}
+    >
+      {/* svg icon here*/}
+    </button>
+  );
+};
+
+export default ScrollToTopButton;
+```
+
+And that's it!
+
+## Conclusion
+
+This is exactly how the scroll-to-top button in this page is implemented. I hope you learned something from this post. Until next time, happy coding!
+
+-jep
