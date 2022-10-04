@@ -1,0 +1,60 @@
+---
+title: useScrollToTop Hook
+description: A hook for implementing scroll-to-top functionality
+author: Jeff Segovia
+tags:
+  - ReactJS
+  - hook
+---
+
+## Code Snippet
+
+```tsx title="useScrollToTop.ts" showLineNumbers
+import { useEffect, useState, useCallback } from 'react';
+
+export default function useScrollToTop(threshold: number = 300) {
+  const [shown, setShown] = useState(false);
+
+  useEffect(() => {
+    const scrollCallback = () => {
+      const scrolledFromTop = window.scrollY;
+      setShown(() => scrolledFromTop > threshold);
+    };
+
+    window.addEventListener('scroll', scrollCallback);
+
+    scrollCallback();
+
+    return () => {
+      window.removeEventListener('scroll', scrollCallback);
+    };
+  }, []);
+
+  const scrollToTop = useCallback(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  return { shown, scrollToTop };
+}
+```
+
+## Usage
+
+To use this hook, just pass a threshold value as an argument:
+
+```tsx title="ScrollToTopButton.tsx" showLineNumbers {1, 5, 8}
+import useScrollToTop from './useScrollToTop.ts';
+import { UpIcon } from '../icons';
+
+const ScrollToTopButton = () => {
+  const { shown, scrollToTop } = useScrollToTop(300);
+
+  return (
+    <button aria-label='scroll to top' onClick={scrollToTop} className='scroll-btn'>
+      <UpIcon />
+    </button>
+  );
+};
+
+export default ScrollToTopButton;
+```
