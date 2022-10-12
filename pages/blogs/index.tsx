@@ -62,7 +62,7 @@ const BlogsPage: NextPage<BlogsPageProps> = ({ posts, tags }) => {
           <BlogCard key={post._id} post={post} />
         ))}
       </div>
-      {posts.length > 6 && (
+      {posts.length > 9 && (
         <div className='my-10'>
           <button className='bg-primary hover:bg-primary/95 text-white font-medium py-4 px-8 rounded-full shadow-md'>
             Load More Posts
