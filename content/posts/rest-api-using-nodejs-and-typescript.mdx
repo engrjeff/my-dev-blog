@@ -70,7 +70,7 @@ In the .gitignore file:
  /node_modules
 ```
 
-Make sure to you do this to avoid accidentally pushing `node_modules` into your repository.
+Make sure that you do this to avoid accidentally pushing `node_modules` into your repository.
 
 Now, write a simple code like `console.log('Hello Node!')` inside `main.ts` then run `npm start`. The process should start and your code should work.
 
@@ -462,14 +462,15 @@ export default UserModel;
 
 In the controller:
 
-```ts showLineNumbers {8-16, 22}
+```ts showLineNumbers {9-17, 23}
 // controllers/user.ts
 
 import { RequestHandler } from 'express';
 
 import UserModel from '../models/user';
 
-// other code
+// ...other code
+
 const update: RequestHandler = async (req, res, next) => {
   try {
     const user = await UserModel.update(req.params.id, req.body);
