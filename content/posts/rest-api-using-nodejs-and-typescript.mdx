@@ -70,7 +70,7 @@ In the .gitignore file:
  /node_modules
 ```
 
-Make sure to you do this to avoid accidentally pushing `node_modules` into your repository.
+Make sure that you do this to avoid accidentally pushing `node_modules` into your repository.
 
 Now, write a simple code like `console.log('Hello Node!')` inside `main.ts` then run `npm start`. The process should start and your code should work.
 
@@ -462,14 +462,15 @@ export default UserModel;
 
 In the controller:
 
-```ts showLineNumbers {8-16, 22}
+```ts showLineNumbers {9-17, 23}
 // controllers/user.ts
 
 import { RequestHandler } from 'express';
 
 import UserModel from '../models/user';
 
-// other code
+// ...other code
+
 const update: RequestHandler = async (req, res, next) => {
   try {
     const user = await UserModel.update(req.params.id, req.body);
@@ -598,3 +599,12 @@ And that's it!
 ## Where to go from here?
 
 The CRUD functionality of this REST API works fine. However, there are still rooms for improvements. One thing we can do is to add validation for checking if a resource exists, for checking if the request body conforms to the shape of the data that we expect. Another thing is to persist the data by using a database such as MySQL, MongoDB, or Couchbase.
+
+Check out Part 2 of this post:
+
+<LinkToPart
+  href='https://jeffsegovia.dev/blogs/rest-api-validation-using-zod'
+  title='REST API Validation Using Zod'
+  subtitle='Part 2'
+  direction='next'
+/>
