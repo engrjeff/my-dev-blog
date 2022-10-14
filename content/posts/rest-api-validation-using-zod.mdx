@@ -131,7 +131,7 @@ And just like that, our first goal is achieved.
 
 ## Deriving Shapes for Data Transfer Object (DTO)
 
-Now, onto our next goal which is to create a validation middleware for our POST and PATCH requests. Before we can do that, we must first define the shape of the user object which we expect to be transferred by the client. a data transfer object or DTO is just an object which carries data between processes and it is important that we define and validate its shape in our API. We derived such shapes as follows:
+Now, onto our next goal which is to create a validation middleware for our POST and PATCH requests. Before we can do that, we must first define the shape of the user object which we expect to be transferred by the client. A data transfer object or DTO is just an object which carries data between processes and it is important that we define and validate its shape in our API. We derived such shapes as follows:
 
 ```ts title="schema.ts" showLineNumbers
 export type CreateUserDto = z.infer<typeof UserSchema>;
@@ -141,9 +141,9 @@ export const PartialUserSchema = UserSchema.partial();
 export type UpdateUserDto = z.infer<typeof PartialUserSchema>;
 ```
 
-For POST request, we don't need an ID for that should be automatically generated so the `CreateUserDto` is simply inferred from the `UserSchema`. For the PATCH request, we don't required the client to transfer the whole User object, only the properties that need to be updated. For this reason, by using Zod's `schema.partial()` method, we can make all the properties of UserSchema optional. This is quite similar from TypeScript's built-in `Partial<T>` utility.
+For POST request, we don't need an ID for that should be automatically generated so the `CreateUserDto` is simply inferred from the `UserSchema`. For the PATCH request, we don't require the client to transfer the whole User object, only the properties that need to be updated. For this reason, by using Zod's `schema.partial()` method, we can make all the properties of UserSchema optional. This is quite similar to TypeScript's built-in `Partial<T>` utility.
 
-Now that's ready, let's refactor the `create` and `update` methods in the user model file:
+Now that that's ready, let's refactor the `create` and `update` methods in the user model file:
 
 ```ts showLineNumbers {2, 4, 15}
 // models/user.ts
