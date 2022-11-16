@@ -10,6 +10,7 @@
     "postbuild": "next-sitemap"
   },
   "dependencies": {
+    "@tailwindcss/line-clamp": "^0.4.2",
     "contentlayer": "^0.2.7",
     "date-fns": "^2.29.3",
     "googleapis": "^108.0.0",
