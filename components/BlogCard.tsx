@@ -25,7 +25,7 @@ const BlogCard = ({ post }: { post: Omit<Post, 'body'> }) => {
           </a>
         </Link>
         <time className='text-xs uppercase text-gray-400'>{post.publishedAt}</time>
-        <div className='flex items-center gap-2 mb-2'>
+        <div className='flex items-center flex-wrap gap-2 mb-2'>
           {post.tags.map((tag, idx) => (
             <div
               key={idx}
@@ -36,7 +36,7 @@ const BlogCard = ({ post }: { post: Omit<Post, 'body'> }) => {
           ))}
         </div>
 
-        <p className='text-gray-900 dark:text-gray-400'>{post.description}</p>
+        <p className='text-gray-900 dark:text-gray-400 line-clamp-2'>{post.description}</p>
       </div>
     </div>
   );

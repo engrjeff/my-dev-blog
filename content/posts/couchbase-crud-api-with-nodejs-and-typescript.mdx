@@ -1,0 +1,427 @@
+---
+title: Couchbase CRUD API With NodeJs And TypeScript
+description: The introduction of Couchbase 7 opens the possibility to group data into scopes and collections. Have a glimpse of Couchbase's rich features by creating a simple CRUD API with NodeJS and TypeScript
+author: Jeff Segovia
+bannerUrl: https://res.cloudinary.com/abide-in-the-vine/image/upload/v1668561852/jeff%20dev%20blog/node-ts-cb/couchbase-crud-api-node-ts_jx4u5g.png
+publishedAt: Nov 16, 2022
+tags:
+  - Couchbase
+  - REST API
+  - NodeJs
+  - TypeScript
+---
+
+export const bannerUrl =
+  'https://res.cloudinary.com/abide-in-the-vine/image/upload/v1668561852/jeff%20dev%20blog/node-ts-cb/couchbase-crud-api-node-ts_jx4u5g.webp';
+
+<BannerImage src={bannerUrl} alt='Couchbase CRUD API With NodeJs And TypeScript by Jeff Segovia' />
+
+We are now adding a persistence layer (a database) to the very simple CRUD API that was created in the <LinkInPage text="second part" href="https://jeffsegovia.dev/blogs/rest-api-validation-using-zod" /> of this series.
+
+## Setup
+
+To get started, we need to install the Couchbase Server in our local machine. You can download it <LinkInPage text="here" href="https://www.couchbase.com/downloads" /> for free. After downloading and successfully installing it, create a bucket, a desired scope, and a collection. To have an overview of what these terms mean, take a look at the comparison of Couchbase (a NoSQL database) with a relational database below:
+
+- bucket &rarr; database
+- scope &rarr; schema
+- collection &rarr; table
+- document &rarr; row
+
+Here's mine. I have a bucket called `node-ts-cb`. Inside it is a scope named `demo_app` and inside this scope is one collection called `users`.
+
+![Adding bucket, scope, collection in Couchbase Server](https://res.cloudinary.com/abide-in-the-vine/image/upload/v1668559316/jeff%20dev%20blog/node-ts-cb/Screen_Shot_2022-11-16_at_8.41.45_AM_bgr1ui.webp)
+
+Now that it's done, let's install the Couchbase SDK for NodeJS by running the ff. in your terminal. Make sure that you are in the project directory.
+
+```shell showLineNumbers
+yarn add couchbase
+```
+
+Then add a `.env` file to store the necessary environment variables. Inside it, include the ff:
+
+```shell showLineNumbers
+DB_HOST = couchbase://127.0.0.1
+DB_USER = YOUR_COUCHBASE_SERVER_USERNAME
+DB_PASSWORD = YOUR_COUCHBASE_SERVER_PASSWORD
+DB_BUCKET = node-ts-cb
+DB_SCOPE = demo_app
+```
+
+Then load the environment variables by adding the ff. lines of code at the top of `main.ts`:
+
+```ts showLineNumbers
+import * as dotenv from 'dotenv';
+
+dotenv.config({ path: __dirname + '/.env' });
+```
+
+## Creating a DBClient Module
+
+For this, we could just call the SDK's functions directly in our model or in the controller. But it is a best practice not to expose the entire library to the models. We should abstract it so that it is more maintainable and when we decide to change our persistence layer thus also changing the necessary SDK, we will also do the update in a single place. So for this reason, create a folder named `db` and inside it create a file called `dbClient.ts`.
+
+```ts showLineNumbers
+import { Bucket, connect, Scope } from 'couchbase';
+
+class DBClient {
+  private HOST = process.env.DB_HOST as string;
+  private USERNAME = process.env.DB_USER as string;
+  private PASSWORD = process.env.DB_PASSWORD as string;
+  private BUCKET_NAME = process.env.DB_BUCKET as string;
+  private SCOPE_NAME = process.env.DB_SCOPE as string;
+
+  private bucket!: Bucket;
+  private scope!: Scope;
+
+  private constructor() {}
+
+  // connect function
+  private async createConnection() {
+    try {
+      const cluster = await connect(this.HOST, {
+        username: this.USERNAME,
+        password: this.PASSWORD,
+      });
+
+      this.bucket = cluster.bucket(this.BUCKET_NAME);
+
+      this.scope = this.bucket.scope(this.SCOPE_NAME);
+
+      console.log('Connected to DB');
+    } catch (error) {
+      console.log('Connection error', error);
+    }
+  }
+}
+```
+
+That code is pretty straight forward. We're just defining the necessary constants and variables. We also created the function to be used to establish a connection to the Couchbase Server.
+
+For the next step, let's apply the singleton pattern so that we don't have to create a new instance of the `DBClient` class everytime we use it.
+
+```ts showLineNumbers
+class DBClient {
+  // other code here
+
+  private static instance: DBClient;
+
+  public static getInstance(): DBClient {
+    if (!DBClient.instance) {
+      DBClient.instance = new DBClient();
+    }
+    DBClient.instance.createConnection();
+
+    return DBClient.instance;
+  }
+}
+```
+
+Now let's expose a `DBClient` instance:
+
+```ts showLineNumbers
+const dbClient = DBClient.getInstance();
+
+export default dbClient;
+```
+
+## Adding the CRUD functions
+
+Let's now add the CRUD functionality inside the DBClient class:
+
+### query
+
+This is used to execute a N1QL Query.
+
+```ts showLineNumbers
+import { QueryOptions } from 'couchbase';
+
+class DBClient {
+  // other code
+
+  public async query<T>(queryString: string, options?: QueryOptions) {
+    const result = await this.scope.query<T>(queryString, options);
+    return result.rows;
+  }
+}
+```
+
+<Alert>
+  Before running a query, make sure to create at least a Primary Index but note that Primary Index
+  is not recommended to use in production.
+</Alert>
+
+### findOne
+
+This is used to find a document by its ID or key.
+
+```ts showLineNumbers
+import { GetOptions } from 'couchbase';
+
+class DBClient {
+  // other code
+
+  public async findOne<T>(collectionName: string, id: string, options?: GetOptions) {
+    const document = await this.scope.collection(collectionName).get(id, options);
+    return document.content as T;
+  }
+}
+```
+
+### insert
+
+This is used to insert a document to a certain collection.
+
+```ts showLineNumbers
+import { InsertOptions } from 'couchbase';
+
+class DBClient {
+  // other code
+
+  public async insert<T extends { docType: string }>(
+    collectionName: string,
+    doc: T,
+    options?: InsertOptions
+  ) {
+    // generate an ID like "USER::12345"
+    const id = `${doc.docType.toUpperCase()}::${Date.now().toString()}`;
+
+    const docToInsert = {
+      ...doc,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    await this.scope.collection(collectionName).insert(id, docToInsert, options);
+    return id;
+  }
+}
+```
+
+### update
+
+This is used to update certain fields of an existing document.
+
+```ts showLineNumbers
+import { MutateInSpec } from 'couchbase';
+
+class DBClient {
+  // other code
+
+  public async update<T>(collectionName: string, id: string, updatedDoc: Partial<T>) {
+    // collect the fields to update
+    const fields = {
+      ...updatedDoc,
+      updatedAt: new Date().toISOString(),
+    };
+
+    const fieldsToUpdate = Object.entries(fields).map(([key, value]) =>
+      MutateInSpec.upsert(key, value)
+    );
+
+    // perform mutation/update
+    await this.scope.collection(collectionName).mutateIn(id, fieldsToUpdate);
+
+    return id;
+  }
+}
+```
+
+<Alert>
+  There's another method for updating a document called **`replace`** but it replaces the entire
+  document. So to make sure that we're only updating certain fields, we used the approach above.
+</Alert>
+
+### remove
+
+This is used to delete a document.
+
+```ts showLineNumbers
+class DBClient {
+  // other code
+
+  public async remove(collectionName: string, id: string) {
+    await this.scope.collection(collectionName).remove(id);
+    return id;
+  }
+}
+```
+
+The entire DBClient implementation is as follows:
+
+```ts showLineNumbers
+import {
+  Bucket,
+  connect,
+  GetOptions,
+  InsertOptions,
+  MutateInSpec,
+  QueryOptions,
+  Scope,
+} from 'couchbase';
+
+class DBClient {
+  private HOST = process.env.DB_HOST as string;
+  private USERNAME = process.env.DB_USER as string;
+  private PASSWORD = process.env.DB_PASSWORD as string;
+  private BUCKET_NAME = process.env.DB_BUCKET as string;
+  private SCOPE_NAME = process.env.DB_SCOPE as string;
+
+  private static instance: DBClient;
+
+  private bucket!: Bucket;
+  private scope!: Scope;
+
+  private constructor() {}
+
+  private async createConnection() {
+    try {
+      const cluster = await connect(this.HOST, {
+        username: this.USERNAME,
+        password: this.PASSWORD,
+      });
+
+      this.bucket = cluster.bucket(this.BUCKET_NAME);
+
+      this.scope = this.bucket.scope(this.SCOPE_NAME);
+
+      console.log('Connected to DB');
+    } catch (error) {
+      console.log('Connection error', error);
+    }
+  }
+
+  public static getInstance(): DBClient {
+    if (!DBClient.instance) {
+      DBClient.instance = new DBClient();
+    }
+    DBClient.instance.createConnection();
+
+    return DBClient.instance;
+  }
+
+  public async query<T>(queryString: string, options?: QueryOptions) {
+    const result = await this.scope.query<T>(queryString, options);
+    return result.rows;
+  }
+
+  public async findOne<T>(collectionName: string, id: string, options?: GetOptions) {
+    const document = await this.scope.collection(collectionName).get(id, options);
+    return document.content as T;
+  }
+
+  public async insert<T extends { docType: string }>(
+    collectionName: string,
+    doc: T,
+    options?: InsertOptions
+  ) {
+    const id = `${doc.docType.toUpperCase()}::${Date.now().toString()}`;
+
+    const docToInsert = {
+      ...doc,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    await this.scope.collection(collectionName).insert(id, docToInsert, options);
+    return id;
+  }
+
+  public async update<T>(collectionName: string, id: string, updatedDoc: Partial<T>) {
+    // collect the fields to update
+    const fields = {
+      ...updatedDoc,
+      updatedAt: new Date().toISOString(),
+    };
+
+    const fieldsToUpdate = Object.entries(fields).map(([key, value]) =>
+      MutateInSpec.upsert(key, value)
+    );
+
+    // perform mutation/update
+    await this.scope.collection(collectionName).mutateIn(id, fieldsToUpdate);
+
+    return id;
+  }
+
+  public async remove(collectionName: string, id: string) {
+    await this.scope.collection(collectionName).remove(id);
+    return id;
+  }
+}
+
+const dbClient = DBClient.getInstance();
+
+export default dbClient;
+```
+
+## Applying in the User Model
+
+Now that we have created an abstraction, we can now easily use it in the User Model.
+
+```ts showLineNumbers
+import dbClient from '../db/dbClient';
+import { User, CreateUserDto, UpdateUserDto } from './schema';
+
+const docType = 'USER';
+const collectionName = 'users';
+
+// GET
+const getAll = async () => {
+  const queryString = `SELECT u.*, meta().id
+                        FROM users u
+                        WHERE docType = $docType`;
+
+  const users = await dbClient.query<User>(queryString, { parameters: { docType } });
+  return users;
+};
+
+// GET by ID
+const getById = async (id: string) => {
+  const user = await dbClient.findOne(collectionName, id);
+  return user;
+};
+
+// CREATE
+const create = async (user: CreateUserDto) => {
+  const newUserId = await dbClient.insert(collectionName, { ...user, docType });
+
+  return newUserId;
+};
+
+// UPDATE
+const update = async (id: string, user: UpdateUserDto) => {
+  const updateUserId = await dbClient.update(collectionName, id, user);
+  return updateUserId;
+};
+
+// DELETE
+const remove = async (id: string) => {
+  const deletedId = await dbClient.remove(collectionName, id);
+  return deletedId;
+};
+
+const UserModel = {
+  getAll,
+  getById,
+  create,
+  update,
+  remove,
+};
+
+export default UserModel;
+```
+
+That's it! We can of course expand this more by adding other collections and defining relationships among collections. In a future post, I will show you how to handle errors. Until then, happy coding!
+
+## Additional Resources
+
+- [Couchbase NodeSDK version 4 docs](https://docs.couchbase.com/sdk-api/couchbase-node-client/modules.html)
+- [Couchbase Scope and Collections](https://docs.couchbase.com/server/current/learn/data/scopes-and-collections.html)
+
+Here's the part 2 of this series:
+
+<LinkToPart
+  href='https://jeffsegovia.dev/blogs/rest-api-validation-using-zod'
+  title='REST API Validation Using Zod'
+  subtitle='Part 2'
+  direction='prev'
+/>
