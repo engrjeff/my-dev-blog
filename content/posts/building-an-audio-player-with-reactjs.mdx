@@ -1,0 +1,803 @@
+---
+title: Building an Audio Player With ReactJS
+description: Learn how to build an audio player with ReactJS and the audio HTML element.
+author: Jeff Segovia
+bannerUrl: https://res.cloudinary.com/abide-in-the-vine/image/upload/v1679551482/jeff%20dev%20blog/react-audio-player-banner_wsz506.png
+publishedAt: March 23, 2023
+tags:
+  - ReactJS
+  - Web APIs
+---
+
+export const bannerUrl =
+  "https://res.cloudinary.com/abide-in-the-vine/image/upload/v1679551482/jeff%20dev%20blog/react-audio-player-banner_wsz506.webp";
+
+<BannerImage src={bannerUrl} alt="Building an Audio Player With ReactJS" />
+
+## Introduction
+
+Yes! We're building an Audio Player using ReactJS! This is great opportunity for us to explore what the `<audio />` HTML element has to offer. To get you more excited for this, the following is what we're building. Go ahead and explore it 😁.
+
+<AudioPlayerExample />
+
+## Our Goal
+
+By the end of this tutorial, we aim to build a functional audio player component with having at least the following features:
+
+- Play/Pause the selected song
+- Previous/Next track functions
+- Change volume intensity
+- Display track elapsed time and duration
+- Show track progress
+- Seek through track parts
+- Show the playable (buffered) track parts
+
+As you may already realized, we have a lot to go through so let's get started! 🚀
+
+## Building the AudioPlayer component
+
+### Initial Setup
+
+The initial implementation is just a simple `<audio />` HTML element:
+
+```tsx title="AudioPlayer.tsx" showLineNumbers
+import * as React from "react";
+
+interface AudioPlayerProps {
+  currentSong?: { title: string; src: string };
+  songIndex: number;
+  songCount: number;
+  onNext: () => void;
+  onPrev: () => void;
+}
+
+export default function AudioPlayer(props: AudioPlayerProps) {
+  const { currentSong, songCount, songIndex, onNext, onPrev } = props;
+
+  const audioRef = React.useRef<HTMLAudioElement | null>(null);
+
+  return (
+    <div className="bg-slate-900 text-slate-400 p-3 relative">
+      {currentSong && (
+        <audio ref={audioRef} preload="metadata">
+          <source type="audio/mpeg" src={currentSong.src} />
+        </audio>
+      )}
+    </div>
+  );
+}
+```
+
+A few points:
+
+1. Our `<AudioPlayer />` takes props one of which is `currentSong` which has a `title` and `src` properties;
+2. We render an `<audio />` element only when `currentSong` is truthy but it is hidden because we have not provided the `controls` attribute;
+3. We grab a reference of the rendered `<audio />` by passing a `ref` to it.
+4. The attribute `preload` allows us to specify a preference for how the browser preloads the audio. In this case we are preloading the audio's metadata from which we can derive useful values like the track's duration.
+
+Now, let us grab the track's duration:
+
+```tsx title="AudioPlayer.tsx" showLineNumbers {7,15}
+export default function AudioPlayer(props: AudioPlayerProps) {
+  const { currentSong, songCount, songIndex, onNext, onPrev } = props;
+
+  const audioRef = React.useRef<HTMLAudioElement | null>(null);
+
+  // states
+  const [duration, setDuration] = React.useState(0);
+
+  return (
+    <div className="bg-slate-900 text-slate-400 p-3 relative">
+      {currentSong && (
+        <audio
+          ref={audioRef}
+          preload="metadata"
+          onDurationChange={(e) => setDuration(e.currentTarget.duration)}
+        >
+          <source type="audio/mpeg" src={currentSong.src} />
+        </audio>
+      )}
+    </div>
+  );
+}
+```
+
+Okay, hold on! Before we go any further, let us take a look at the media loading process.
+
+1. `loadstart` - media loading has started and the browser is connecting to the media.
+2. `durationchange` - fires when the duration of the media is already available.
+3. `loadedmetadata` - fires when all media metadata has been loaded.
+4. `loadeddata` - this event is fired when the first bit of media arrives.
+5. `progress` - the event indicating that media downloading is still in progress.
+6. `canplay` - fires when the media is ready to playable.
+7. `canplaythrough` - this event lets us know that the media can be played all the way through.
+
+Now, let us a state that trackes whether the audio is ready or not.
+
+```tsx title="AudioPlayer.tsx" showLineNumbers {6,15-17}
+export default function AudioPlayer(props: AudioPlayerProps) {
+  /** truncated */
+
+  // states
+  const [duration, setDuration] = React.useState(0);
+  const [isReady, setIsReady] = React.useState(false);
+
+  return (
+    <div className="bg-slate-900 text-slate-400 p-3 relative">
+      {currentSong && (
+        <audio
+          ref={audioRef}
+          preload="metadata"
+          onDurationChange={(e) => setDuration(e.currentTarget.duration)}
+          onCanPlay={(e) => {
+            setIsReady(true);
+          }}
+        >
+          <source type="audio/mpeg" src={currentSong.src} />
+        </audio>
+      )}
+    </div>
+  );
+}
+```
+
+### Displaying the Track title
+
+```tsx title="AudioPlayer.tsx" showLineNumbers {20-25}
+export default function AudioPlayer(props: AudioPlayerProps) {
+  /** truncated */
+
+  // states
+  const [duration, setDuration] = React.useState(0);
+  const [isReady, setIsReady] = React.useState(false);
+
+  return (
+    <div className="bg-slate-900 text-slate-400 p-3 relative">
+      <audio
+        ref={audioRef}
+        preload="metadata"
+        onDurationChange={(e) => setDuration(e.currentTarget.duration)}
+        onCanPlay={(e) => {
+          setIsReady(true);
+        }}
+      >
+        <source type="audio/mpeg" src={currentSong.src} />
+      </audio>
+      <div className="text-center mb-1">
+        <p className="text-slate-300 font-bold">
+          {currentSong?.title ?? "Select a song"}
+        </p>
+        <p className="text-xs">Singer Name</p>
+      </div>
+    </div>
+  );
+}
+```
+
+### Adding Play/Pause functions
+
+Let's add a button that will allow us to toggle between the audio's playing and paused states.
+
+```tsx title="AudioPlayer.tsx" showLineNumbers {10,12-20,31-32,42-59}
+import { MdPlayArrow, MdPause } from "react-icons/md";
+import IconButton from "./components/IconButton";
+
+export default function AudioPlayer(props: AudioPlayerProps) {
+  /** truncated */
+
+  // states
+  const [duration, setDuration] = React.useState(0);
+  const [isReady, setIsReady] = React.useState(false);
+  const [isPlaying, setIsPlaying] = React.useState(false);
+
+  const togglePlayPause = () => {
+    if (isPlaying) {
+      audioRef.current?.pause();
+      setIsPlaying(false);
+    } else {
+      audioRef.current?.play();
+      setIsPlaying(true);
+    }
+  };
+
+  return (
+    <div className="bg-slate-900 text-slate-400 p-3 relative">
+      <audio
+        ref={audioRef}
+        preload="metadata"
+        onDurationChange={(e) => setDuration(e.currentTarget.duration)}
+        onCanPlay={(e) => {
+          setIsReady(true);
+        }}
+        onPlaying={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
+      >
+        <source type="audio/mpeg" src={currentSong.src} />
+      </audio>
+      <div className="text-center mb-1">
+        <p className="text-slate-300 font-bold">
+          {currentSong?.title ?? "Select a song"}
+        </p>
+        <p className="text-xs">Singer Name</p>
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-3 items-center mt-4">
+        <div className="flex items-center gap-3 justify-self-center">
+          <IconButton
+            disabled={!isReady}
+            onClick={togglePlayPause}
+            aria-label={isPlaying ? "Pause" : "Play"}
+            size="lg"
+          >
+            {!isReady && currentSong ? (
+              <CgSpinner size={24} className="animate-spin" />
+            ) : isPlaying ? (
+              <MdPause size={30} />
+            ) : (
+              <MdPlayArrow size={30} />
+            )}
+          </IconButton>
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
+A few points here:
+
+1. When `isReady` is `false` we disable the button.
+2. We defined a function called `togglePlayPause` to handle the play/pause logic.
+3. When `isReady` is false we show a loading icon.
+4. When `isPlaying` is true, we show a pause icon otherwise we show a play icon.
+
+### Adding a volume control
+
+Let's now add a way to change the audio's volume. For this, we'll create a custom slider component which we'll call as `VolumeInput`. It's implementation is as follows:
+
+```tsx title="VolumeInput.tsx" showLineNumbers
+interface VolumeInputProps {
+  volume: number;
+  onVolumeChange: (volume: number) => void;
+}
+
+export default function VolumeInput(props: VolumeInputProps) {
+  const { volume, onVolumeChange } = props;
+
+  return (
+    <input
+      aria-label="volume"
+      name="volume"
+      type="range"
+      min={0}
+      step={0.05}
+      max={1}
+      value={volume}
+      className="w-[70px] m-0 h-2 rounded-full accent-cyan-600 bg-gray-700 appearance-none cursor-pointer"
+      onChange={(e) => {
+        onVolumeChange(e.currentTarget.valueAsNumber);
+      }}
+    />
+  );
+}
+```
+
+We then use the `VolumeInput` component in our audio `AudioPlayer` as follows:
+
+```tsx title="AudioPlayer.tsx" showLineNumbers {7,9-13,22,54-56}
+import VolumeInput from "./components/VolumeInput";
+
+export default function AudioPlayer(props: AudioPlayerProps) {
+  /** truncated */
+
+  // states
+  const [volume, setVolume] = React.useState(0.2); // set to 0.2, max is 1.0
+
+  const handleVolumeChange = (volumeValue: number) => {
+    if (!audioRef.current) return;
+    audioRef.current.volume = volumeValue;
+    setVolume(volumeValue);
+  };
+
+  return (
+    <div className="bg-slate-900 text-slate-400 p-3 relative">
+      <audio
+        ref={audioRef}
+        preload="metadata"
+        onDurationChange={(e) => setDuration(e.currentTarget.duration)}
+        onCanPlay={(e) => {
+          e.currentTarget.volume = volume;
+          setIsReady(true);
+        }}
+        onPlaying={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
+      >
+        <source type="audio/mpeg" src={currentSong.src} />
+      </audio>
+      <div className="text-center mb-1">
+        <p className="text-slate-300 font-bold">
+          {currentSong?.title ?? "Select a song"}
+        </p>
+        <p className="text-xs">Singer Name</p>
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-3 items-center mt-4">
+        <div className="flex items-center gap-3 justify-self-center">
+          <IconButton
+            disabled={!isReady}
+            onClick={togglePlayPause}
+            aria-label={isPlaying ? "Pause" : "Play"}
+            size="lg"
+          >
+            {!isReady && currentSong ? (
+              <CgSpinner size={24} className="animate-spin" />
+            ) : isPlaying ? (
+              <MdPause size={30} />
+            ) : (
+              <MdPlayArrow size={30} />
+            )}
+          </IconButton>
+        </div>
+
+        <div className="flex gap-3 items-center md:justify-self-end">
+          <VolumeInput volume={volume} onVolumeChange={handleVolumeChange} />
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
+A few points here:
+
+1. We define another state for volume.
+2. We set the audio volume to our volume state value when the audio is ready to be played (`onCanPlay`).
+3. We pass the volume state and the `handleVolumeChange` handler to the `VolumeInput` component.
+
+### Adding the mute/unmute toggle
+
+For this functionality, we just need a simple button to set the volume to either 0 or 1.
+
+```tsx title="AudioPlayer.tsx" showLineNumbers {1-9,28,36-43}
+const handleMuteUnmute = () => {
+  if (!audioRef.current) return;
+
+  if (audioRef.current.volume !== 0) {
+    audioRef.current.volume = 0;
+  } else {
+    audioRef.current.volume = 1;
+  }
+};
+
+{
+  currentSong && (
+    <audio
+      ref={audioRef}
+      preload="metadata"
+      onDurationChange={(e) => setDuration(e.currentTarget.duration)}
+      onPlaying={() => setIsPlaying(true)}
+      onPause={() => setIsPlaying(false)}
+      onEnded={handleNext}
+      onCanPlay={(e) => {
+        e.currentTarget.volume = volume;
+        setIsReady(true);
+      }}
+      onTimeUpdate={(e) => {
+        setCurrrentProgress(e.currentTarget.currentTime);
+        handleBufferProgress(e);
+      }}
+      onVolumeChange={(e) => setVolume(e.currentTarget.volume)}
+    >
+      <source type="audio/mpeg" src={currentSong.src} />
+    </audio>
+  );
+}
+
+<div className="flex gap-3 items-center md:justify-self-end">
+  <IconButton
+    intent="secondary"
+    size="sm"
+    onClick={handleMuteUnmute}
+    aria-label={volume === 0 ? "unmute" : "mute"}
+  >
+    {volume === 0 ? <MdVolumeOff size={20} /> : <MdVolumeUp size={20} />}
+  </IconButton>
+  <VolumeInput volume={volume} onVolumeChange={handleVolumeChange} />
+</div>;
+```
+
+In the `handleMuteUnmute` function, we are setting the volume directly to the `audioRef`'s current value's volume property. This fires the `onVolumeChange` event of the audio element so here is where we set the value of the volume state so we can change the volume icon accordingly.
+
+### Creating the AudioProgressBar component
+
+For this component, we want to be able to:
+
+- Show track progress
+- Seek through track parts
+- Show the playable (buffered) track parts
+
+In order to achieve this, we'll implement a new component.
+
+```tsx title="AudioPlayer.tsx" showLineNumbers
+import * as React from "react";
+
+interface ProgressCSSProps extends React.CSSProperties {
+  "--progress-width": number;
+  "--buffered-width": number;
+}
+
+interface AudioProgressBarProps
+  extends React.ComponentPropsWithoutRef<"input"> {
+  duration: number;
+  currentProgress: number;
+  buffered: number;
+}
+
+export default function AudioProgressBar(props: AudioProgressBarProps) {
+  const { duration, currentProgress, buffered, ...rest } = props;
+
+  const progressBarWidth = isNaN(currentProgress / duration)
+    ? 0
+    : currentProgress / duration;
+  const bufferedWidth = isNaN(buffered / duration) ? 0 : buffered / duration;
+
+  const progressStyles: ProgressCSSProps = {
+    "--progress-width": progressBarWidth,
+    "--buffered-width": bufferedWidth,
+  };
+
+  return (
+    <div className="absolute h-1 -top-[4px] left-0 right-0 group">
+      <input
+        type="range"
+        name="progress"
+        style={progressStyles}
+        min={0}
+        max={duration}
+        value={currentProgress}
+        {...rest}
+      />
+    </div>
+  );
+}
+```
+
+Alright, what's going on here? The component is just an `input` of type `range`. It's maximum value is the audio's duration. It's current value is the number of seconds that has elapsed since the audio was played. We show the actual progress and the buffered part by utilizing the input's `::before` and `::after` pseudo-elements and by giving such proper styles.
+
+You might also notice that we're playing with some CSS variables here:
+
+```tsx showLineNumbers
+interface ProgressCSSProps extends React.CSSProperties {
+  "--progress-width": number;
+  "--buffered-width": number;
+}
+```
+
+The reason for this is to dynamically scale the `::before` and `::after` pseudo-elements based on the actual progress and buffered values. Since we're doing this, we must add the ff. css to our global css file:
+
+```css showLineNumbers
+:root {
+  --progress-width: 0;
+  --buffered-width: 0;
+}
+
+.progress-bar::-webkit-slider-thumb {
+  z-index: 4;
+  position: relative;
+}
+
+.progress-bar::before {
+  transform: scaleX(var(--progress-width));
+  z-index: 3;
+}
+
+.progress-bar::after {
+  transform: scaleX(var(--buffered-width));
+  transform-origin: left;
+  z-index: 2;
+}
+```
+
+### Handling progress
+
+We show the proper audio progress as well as the buffered part through the ff. implementation:
+
+```tsx title="AudioPlayer.tsx" showLineNumbers
+// states
+const [currrentProgress, setCurrrentProgress] = React.useState(0);
+const [buffered, setBuffered] = React.useState(0);
+
+// handler
+const handleBufferProgress: React.ReactEventHandler<HTMLAudioElement> = (e) => {
+  const audio = e.currentTarget;
+  const dur = audio.duration;
+  if (dur > 0) {
+    for (let i = 0; i < audio.buffered.length; i++) {
+      if (
+        audio.buffered.start(audio.buffered.length - 1 - i) < audio.currentTime
+      ) {
+        const bufferedLength = audio.buffered.end(
+          audio.buffered.length - 1 - i,
+        );
+        setBuffered(bufferedLength);
+        break;
+      }
+    }
+  }
+};
+
+// markup
+<audio
+  onTimeUpdate={(e) => {
+    setCurrrentProgress(e.currentTarget.currentTime);
+    handleBufferProgress(e);
+  }}
+  onProgress={handleBufferProgress}
+>
+  <source type="audio/mpeg" src={currentSong.src} />
+</audio>;
+```
+
+As per <LinkInPage text='MDN the docs' href='https://developer.mozilla.org/en-US/docs/Web/Guide/Audio_and_video_delivery/buffering_seeking_time_ranges' /> ,
+
+> The `buffered` attribute will tell us which parts of the media has been downloaded. It returns a `TimeRanges` object, which will tell us which chunks of media have been downloaded.
+
+Moreover, also from MDN docs, a `TimeRanges` object consists of the following properties:
+
+- length: The number of time ranges in the object.
+- start(index): The start time, in seconds, of a time range.
+- end(index): The end time, in seconds, of a time range.
+
+Having the values of `currentProgress` and `buffered` states, we pass them to the AudioProgressBar component as follows:
+
+```tsx title="AudioPlayer.tsx" showLineNumbers
+<AudioProgressBar
+  duration={duration}
+  currentProgress={currrentProgress}
+  buffered={buffered}
+  onChange={(e) => {
+    if (!audioRef.current) return;
+
+    audioRef.current.currentTime = e.currentTarget.valueAsNumber;
+
+    setCurrrentProgress(e.currentTarget.valueAsNumber);
+  }}
+/>
+```
+
+### Previous/Next functions
+
+Let us now add the ability to navigate through songs by providing our users a previous and a next button.
+
+```tsx title="AudioPlayer.tsx" showLineNumbers
+<div className="flex items-center gap-3 justify-self-center">
+  <IconButton
+    onClick={onPrev}
+    disabled={songIndex === 0}
+    aria-label="go to previous"
+    intent="secondary"
+  >
+    <MdSkipPrevious size={24} />
+  </IconButton>
+  <IconButton
+    disabled={!isReady}
+    onClick={togglePlayPause}
+    aria-label={isPlaying ? "Pause" : "Play"}
+    size="lg"
+  >
+    {!isReady && currentSong ? (
+      <CgSpinner size={24} className="animate-spin" />
+    ) : isPlaying ? (
+      <MdPause size={30} />
+    ) : (
+      <MdPlayArrow size={30} />
+    )}
+  </IconButton>
+  <IconButton
+    onClick={onNext}
+    disabled={songIndex === songCount - 1}
+    aria-label="go to next"
+    intent="secondary"
+  >
+    <MdSkipNext size={24} />
+  </IconButton>
+</div>
+```
+
+A few points here:
+
+1. The `onPrev` and `onNext` functions come from the props.
+2. The previous button is disabled when the current track is the first one.
+3. The next button is disabled when the current track is the last track on the list.
+
+In order to make sure that everytime we click the next or the previous button the current song is automatically played, we add the following effect. This is also to make sure that when the selected song is changed from the track list, the audio will play once it's ready.
+
+```tsx title="AudioPlayer.tsx" showLineNumbers
+React.useEffect(() => {
+  audioRef.current?.pause();
+
+  const timeout = setTimeout(() => {
+    audioRef.current?.play();
+  }, 500);
+
+  return () => {
+    clearTimeout(timeout);
+  };
+}, [songIndex]);
+```
+
+### Adding a song list UI
+
+The song list UI is just a simple unordered list that renders audio tracks. Check its implementation below 👇:
+
+```tsx title="App.tsx" showLineNumbers
+import AudioPlayer from "./AudioPlayer";
+import TrackItem from "./TrackItem";
+
+import { songs } from "./songs";
+
+function App() {
+  const [currentSongIndex, setCurrentSongIndex] = useState(-1);
+
+  const currentSong = songs[currentSongIndex];
+
+  return (
+    <div className="not-prose border border-slate-800 rounded-lg my-10">
+      <div className="container mx-auto p-6 flex-1">
+        <h1 className="text-xl md:text-4xl font-bold mb-8">My Audio Player</h1>
+        <ul>
+          {songs.map((song, index) => (
+            <TrackItem
+              key={index}
+              selected={index === currentSongIndex}
+              title={song.title}
+              trackNumberLabel={song.trackNumber}
+              onClick={() => setCurrentSongIndex(index)}
+            />
+          ))}
+        </ul>
+      </div>
+      <AudioPlayer
+        key={currentSongIndex}
+        currentSong={currentSong}
+        songCount={songs.length}
+        songIndex={currentSongIndex}
+        onNext={() => setCurrentSongIndex((i) => i + 1)}
+        onPrev={() => setCurrentSongIndex((i) => i - 1)}
+      />
+    </div>
+  );
+}
+```
+
+The `TrackItem` component looks like this:
+
+```tsx title="TrackItem.tsx" showLineNumbers
+import { MdPlayArrow, MdPause } from "react-icons/md";
+import cn from "classnames";
+
+interface TrackItemProps {
+  title: string;
+  trackNumberLabel: string;
+  selected: boolean;
+  onClick: () => void;
+}
+
+function TrackItem({
+  title,
+  trackNumberLabel,
+  selected,
+  onClick,
+}: TrackItemProps) {
+  return (
+    <li
+      onClick={onClick}
+      className={cn(
+        "flex items-center py-3 px-3 w-full space-evenly rounded cursor-pointer mb-1",
+        { "bg-cyan-600 text-white": selected },
+        { "hover:bg-cyan-600 hover:text-white": !selected },
+      )}
+    >
+      <span className="text-sm inline-block">{trackNumberLabel}</span>
+      <h2 className="flex-1 text-base text-center">{title}</h2>
+      <span>
+        {selected ? <MdPause size={20} /> : <MdPlayArrow size={20} />}
+      </span>
+    </li>
+  );
+}
+
+export default TrackItem;
+```
+
+Now, a few points here:
+
+1. The initial songIndex is -1 to make sure that no song is selected on first load.
+2. When each track is clicked, the currentSong changes.
+
+## Bonus Section
+
+### 1. Handle the event when a track has ended
+
+```tsx showLineNumbers {7}
+<audio
+  ref={audioRef}
+  preload="metadata"
+  onDurationChange={(e) => setDuration(e.currentTarget.duration)}
+  onPlaying={() => setIsPlaying(true)}
+  onPause={() => setIsPlaying(false)}
+  onEnded={onNext}
+  onCanPlay={(e) => {
+    e.currentTarget.volume = volume;
+    setIsReady(true);
+  }}
+  onTimeUpdate={(e) => {
+    setCurrrentProgress(e.currentTarget.currentTime);
+    handleBufferProgress(e);
+  }}
+  onProgress={handleBufferProgress}
+  onVolumeChange={(e) => setVolume(e.currentTarget.volume)}
+>
+  <source type="audio/mpeg" src={currentSong.src} />
+</audio>
+```
+
+### 2. `<IconButton />` implementation
+
+Here's how I implemented the IconButton component used in this post:
+
+```tsx title="IconButton.tsx" showLineNumbers
+import React from "react";
+import cn from "classnames";
+
+type Intent = "primary" | "secondary";
+type Size = "sm" | "md" | "lg";
+
+interface IconButtonProps extends React.ComponentPropsWithoutRef<"button"> {
+  intent?: Intent; // can add more
+  size?: Size;
+}
+
+const colorMap: Record<Intent, string> = {
+  primary: "bg-cyan-600 text-white",
+  secondary: "bg-slate-800 text-slate-400",
+};
+
+const sizeMap: Record<Size, string> = {
+  sm: "h-8 w-8",
+  md: "h-10 w-10",
+  lg: "h-12 w-12",
+};
+
+export default function IconButton({
+  intent = "primary",
+  size = "md",
+  className,
+  ...props
+}: IconButtonProps) {
+  const colorClass = colorMap[intent];
+  const sizeClass = sizeMap[size];
+  const classes = cn(
+    "rounded-full flex items-center justify-center ring-offset-slate-900 focus:outline-none focus:ring-2 focus:ring-cyan-600 focus:ring-offset-2 disabled:opacity-60",
+    colorClass,
+    sizeClass,
+    className,
+  );
+  return <button className={classes} {...props} />;
+}
+```
+
+### 3. Stackblitz Playground
+
+You can play around this simple project by forking the ff. playground in Stackblitz.
+
+<LinkInPage
+  text="Stackblitz Playground"
+  href="https://stackblitz.com/edit/vitejs-vite-yzkflx?file=src/AudioPlayer.tsx"
+/> ,
+
+## Conclusion
+
+By leveraging the power of ReactJs and the native features of the audio HTML element, we're able to create a functional, dynamic, and fun audio player which we can use in many applications.
+
+Happy coding!
+
+-jep
