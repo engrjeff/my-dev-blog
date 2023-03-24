@@ -624,6 +624,36 @@ React.useEffect(() => {
 }, [songIndex]);
 ```
 
+### Displaying the Elapsed time over Duration
+
+For this we aim to show the user the current audio progress as it plays. This is achieved by creating a helper function that helps us extract the minutes and seconds components of a given duration.
+
+```tsx showLineNumbers
+function formatDurationDisplay(duration: number) {
+  const min = Math.floor(duration / 60);
+  const sec = Math.floor(duration - min * 60);
+
+  const formatted = [min, sec].map((n) => (n < 10 ? "0" + n : n)).join(":"); // format - mm:ss
+
+  return formatted;
+}
+```
+
+We then add these lines to our AudioPlayer component:
+
+```tsx title="AudioPlayer.tsx" showLineNumbers
+const durationDisplay = formatDurationDisplay(duration);
+const elapsedDisplay = formatDurationDisplay(currrentProgress);
+```
+
+Then before the buttons, we add the following markup:
+
+```tsx title="AudioPlayer.tsx" showLineNumbers
+<span className="text-xs">
+  {elapsedDisplay} / {durationDisplay}
+</span>
+```
+
 ### Adding a song list UI
 
 The song list UI is just a simple unordered list that renders audio tracks. Check its implementation below 👇:
