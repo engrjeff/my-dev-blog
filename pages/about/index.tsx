@@ -15,7 +15,7 @@ const AboutPage: NextPage<AboutPageProps> = ({ about }) => {
 
   return (
     <>
-      <NextSeo title='About | Jeff Segovia' description={about.description} />
+      <NextSeo title='About - Jeff Segovia' description={about.description} />
       <Article>
         <div className='space-y-2 mb-6'>
           <h1 className='text-4xl font-bold text-gray-900 dark:text-white'>About Me</h1>

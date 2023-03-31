@@ -43,8 +43,8 @@ const BlogsPage: NextPage<BlogsPageProps> = ({ posts, tags }) => {
           images: [{ url: bannerUrls.blog, alt: 'Jeff Segovia Blog', width: 1200, height: 630 }],
         }}
       />
-      <div className='space-y-2 mb-6'>
-        <h2 className='text-4xl font-bold text-gray-900 dark:text-white'>Blogs</h2>
+      <div className='space-y-4 mb-6'>
+        <h1 className='text-4xl md:text-5xl font-bold text-gray-900 dark:text-white'>Blogs</h1>
         <p className='text-gray-600 dark:text-gray-400'>
           Being able to share what I know through these posts is truly a delight for me. May you
           pick up a thing or two from these. 😊
@@ -62,7 +62,7 @@ const BlogsPage: NextPage<BlogsPageProps> = ({ posts, tags }) => {
           <BlogCard key={post._id} post={post} />
         ))}
       </div>
-      {posts.length > 6 && (
+      {posts.length > 9 && (
         <div className='my-10'>
           <button className='bg-primary hover:bg-primary/95 text-white font-medium py-4 px-8 rounded-full shadow-md'>
             Load More Posts

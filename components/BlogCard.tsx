@@ -19,7 +19,13 @@ const BlogCard = ({ post }: { post: Omit<Post, 'body'> }) => {
         </a>
       </Link>
       <div className='py-5 flex flex-col gap-2'>
-        <div className='flex items-center gap-2 mb-2'>
+        <Link href={post.url}>
+          <a className='text-lg font-bold group-hover:text-primary transition-colors text-gray-900 dark:text-gray-100'>
+            {post.title}
+          </a>
+        </Link>
+        <time className='text-xs uppercase text-gray-400'>{post.publishedAt}</time>
+        <div className='flex items-center flex-wrap gap-2 mb-2'>
           {post.tags.map((tag, idx) => (
             <div
               key={idx}
@@ -29,15 +35,8 @@ const BlogCard = ({ post }: { post: Omit<Post, 'body'> }) => {
             </div>
           ))}
         </div>
-        <time className='text-xs uppercase text-gray-400'>{post.publishedAt}</time>
-        <Link href={post.url}>
-          <a className='text-lg font-bold group-hover:text-primary transition-colors text-gray-900 dark:text-gray-100'>
-            {post.title}
-          </a>
-        </Link>
-        <p className='hidden text-sm text-gray-900 dark:text-gray-100'>
-          Lorem ipsum dolor sit amet, consectetur adipisicing elit. Veniam a maxime hic inventore.
-        </p>
+
+        <p className='text-gray-900 dark:text-gray-400 line-clamp-2'>{post.description}</p>
       </div>
     </div>
   );

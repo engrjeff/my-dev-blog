@@ -1,0 +1,298 @@
+---
+title: React Render Prop Pattern
+description: The render prop pattern in ReactJs is a pattern which when used right can lead to the creation of flexible and reusable components. Learn how to create a component that applies the render prop pattern in this post.
+author: Jeff Segovia
+bannerUrl: https://res.cloudinary.com/abide-in-the-vine/image/upload/v1670578747/jeff%20dev%20blog/jeffsegovia.dev_omdor7.png
+publishedAt: Dec 9, 2022
+tags:
+  - ReactJS
+  - Design Pattern
+---
+
+export const bannerUrl =
+  'https://res.cloudinary.com/abide-in-the-vine/image/upload/v1670578747/jeff%20dev%20blog/jeffsegovia.dev_omdor7.webp';
+
+<BannerImage src={bannerUrl} alt='React Render Prop Pattern' />
+
+## Introduction
+
+Sometimes when creating React components, we want to make it as reusable as possible to support different use-cases. One technique to achieve this is called the _Render Props_ technique. According to the ReactJS docs,
+
+> The term `render prop` refers to a technique for sharing code between React components using a prop whose value is a function.
+> -ReactJS docs
+
+Furthermore,
+
+> A component with a render prop takes a function that returns a React element and calls it instead of implementing its own render logic.
+> -ReactJS docs
+
+## Applying the Render Prop Technique
+
+Let's say we need an `AppList` component and one of the requirements is to have its list items to be configurable, that is, it can render any component/ui.
+
+We can start with something very simple like the one below:
+
+```tsx title="AppList.tsx" showLineNumbers
+import { type ReactNode } from 'react';
+
+interface AppListProps {
+  data: any[];
+  renderItem: (item: any) => ReactNode;
+}
+
+function AppList(props: AppListProps) {
+  const { data, renderItem } = props;
+
+  return (
+    <ul>
+      {data.map((d) => {
+        return <li key={d}>{renderItem(d)}</li>;
+      })}
+    </ul>
+  );
+}
+
+export default AppList;
+```
+
+Our `AppList` component can take a `data` prop which is any array and a `renderItem` prop which is a function which has a data item as its argument. The `renderItem` prop here is our render prop. We can use the current implementation as follows:
+
+```tsx title="App.tsx" showLineNumbers
+const listData = ['Matthew', 'Mark', 'Luke', 'John', 'Paul'];
+
+function App() {
+  return <AppList data={listData} renderItem={(item) => item} />;
+}
+
+export default App;
+```
+
+That works. We can also return JSX to render an item like this:
+
+```tsx title="App.tsx" showLineNumbers
+<AppList
+  data={listData}
+  renderItem={(item) => (
+    <button>
+      <span>{item} 👋</span>
+    </button>
+  )}
+/>
+```
+
+This renders like this:
+
+![A sample output of the AppList component](https://res.cloudinary.com/abide-in-the-vine/image/upload/v1670575672/jeff%20dev%20blog/design-patterns/Screen_Shot_2022-12-09_at_4.47.42_PM_hbbxk3.webp)
+
+The render prop just works because by definition it is a function prop that any component can use to know what to render.
+
+## Supporting Array of Objects
+
+That works indeed. But so far we're assuming the `data` is just a plain array of, say, strings or numbers. How about when it is an array of objects? This should be supported by our `AppList` component because most of the times application data are objects.
+
+Well, it is quite simple. Let's change our data first:
+
+```tsx showLineNumbers
+interface Apostle {
+  name: string;
+  age: number;
+}
+
+const listData: Apostle[] = [
+  {
+    name: 'Matthew',
+    age: 45,
+  },
+  {
+    name: 'Mark',
+    age: 38,
+  },
+  {
+    name: 'Luke',
+    age: 52,
+  },
+  {
+    name: 'John',
+    age: 39,
+  },
+  {
+    name: 'Paul',
+    age: 43,
+  },
+];
+```
+
+We can just pass that as our new list data:
+
+```tsx title="App.tsx" showLineNumbers {8}
+function App() {
+  return (
+    <AppList
+      data={listData}
+      renderItem={(item) => (
+        <button>
+          <span>
+            Hi! I'm {item.name} 👋. I'm {item.age} years old.
+          </span>
+        </button>
+      )}
+    />
+  );
+}
+```
+
+Output:
+
+![A sample output of the AppList component](https://res.cloudinary.com/abide-in-the-vine/image/upload/v1670577264/jeff%20dev%20blog/design-patterns/Screen_Shot_2022-12-09_at_5.14.18_PM_gccahl.webp)
+
+## Solving the `key` Problem
+
+That works again but now we have a problem. Can you guess it? Open your devtools and face this error:
+
+![An error on keys thrown by ReactJs](https://res.cloudinary.com/abide-in-the-vine/image/upload/v1670576501/jeff%20dev%20blog/design-patterns/Screen_Shot_2022-12-09_at_5.01.34_PM_u5cppb.webp)
+
+What is the culprit? Let us revisit the `AppList` component. Note that in line 14 we're passing an item called `d` but given our new data structure, it is now an `Apostle` object.
+
+```tsx title="AppList.tsx" showLineNumbers {14}
+import { type ReactNode } from 'react';
+
+interface AppListProps {
+  data: any[];
+  renderItem: (item: any) => ReactNode;
+}
+
+function AppList(props: AppListProps) {
+  const { data, renderItem } = props;
+
+  return (
+    <ul>
+      {data.map((d) => {
+        return <li key={d}>{renderItem(d)}</li>;
+      })}
+    </ul>
+  );
+}
+
+export default AppList;
+```
+
+What can we do to fix this? First we need to make the `AppList` component generic.
+
+```tsx title="AppList.tsx" showLineNumbers {3-6, 8}
+import { type ReactNode } from 'react';
+
+interface AppListProps<T> {
+  data: T[];
+  renderItem: (item: T) => ReactNode;
+}
+
+function AppList<T>(props: AppListProps<T>) {
+  const { data, renderItem } = props;
+
+  return (
+    <ul>
+      {data.map((d) => {
+        return <li key={d}>{renderItem(d)}</li>;
+      })}
+    </ul>
+  );
+}
+```
+
+Then let's add a new prop called `keyExtractor` in order for the consumer of our component to decide how a key will be assigned to each list item:
+
+```tsx title="AppList.tsx" showLineNumbers {6,10,15}
+import { type ReactNode } from 'react';
+
+interface AppListProps<T> {
+  data: T[];
+  renderItem: (item: T) => ReactNode;
+  keyExtractor: (item: T) => string;
+}
+
+function AppList<T>(props: AppListProps<T>) {
+  const { data, renderItem, keyExtractor } = props;
+
+  return (
+    <ul>
+      {data.map((d) => {
+        return <li key={keyExtractor(d)}>{renderItem(d)}</li>;
+      })}
+    </ul>
+  );
+}
+```
+
+We use that in `App.tsx` as follows:
+
+```tsx title="App.tsx" showLineNumbers {5}
+function App() {
+  return (
+    <AppList
+      data={listData}
+      keyExtractor={(item) => item.name}
+      renderItem={(item) => (
+        <button>
+          <span>
+            Hi! I'm {item.name} 👋. I'm {item.age} years old.
+          </span>
+        </button>
+      )}
+    />
+  );
+}
+```
+
+One advantage of this approach is that the user does not need to pass something like an `onClick` prop to the `AppList` itself. The user of our component can pass that directly to the very list item component being rendered by the `AppList`.
+
+```tsx title="App.tsx" showLineNumbers {7}
+function App() {
+  return (
+    <AppList
+      data={listData}
+      keyExtractor={(item) => item.name}
+      renderItem={(item) => (
+        <button onClick={() => alert(`Hi! I am ${item.name}`)}>
+          <span>
+            Hi! I'm {item.name} 👋. I'm {item.age} years old.
+          </span>
+        </button>
+      )}
+    />
+  );
+}
+```
+
+## Code clean up
+
+Let us clean our `App.tsx` a little bit by replacing `item` with what entity it really is, in this case an `apostle` entity.
+
+```tsx title="App.tsx" showLineNumbers {5-7,9}
+function App() {
+  return (
+    <AppList
+      data={listData}
+      keyExtractor={(apostle) => apostle.name}
+      renderItem={(apostle) => (
+        <button onClick={() => alert(`Hi! I am ${apostle.name}`)}>
+          <span>
+            Hi! I'm {apostle.name} 👋. I'm {apostle.age} years old.
+          </span>
+        </button>
+      )}
+    />
+  );
+}
+```
+
+## Where to go from here?
+
+What you have learned is not all that you can do with render props. You can also use this pattern to pass state values from one component to another. This use-case is well utilized in many React component libraries.
+
+## Conclusion
+
+A time will come where we'll face the need to create components that are flexible enough to support most of our use cases. For such need, design patterns can be a great help. In this post we're able to utilize one pattern called the **render prop** technique to create a flexible, reusable component.
+
+Happy coding!
+
+-jep

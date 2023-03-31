@@ -1,0 +1,318 @@
+---
+title: REST API Validation Using Zod
+description: Learn how to validate a NodeJS REST API using Zod, a TypeScript-first validation library
+author: Jeff Segovia
+bannerUrl: https://res.cloudinary.com/abide-in-the-vine/image/upload/v1665644919/jeff%20dev%20blog/node-ts-cb/rest-api-validation-using-zod_jz25r7.png
+publishedAt: Oct 14, 2022
+tags:
+  - REST API
+  - NodeJs
+  - TypeScript
+---
+
+export const bannerUrl =
+  'https://res.cloudinary.com/abide-in-the-vine/image/upload/v1665644919/jeff%20dev%20blog/node-ts-cb/rest-api-validation-using-zod_jz25r7.webp';
+
+<BannerImage src={bannerUrl} alt='REST API Validation Using Zod by Jeff Segovia' />
+
+NOTE:
+This is the second part of the series of posts about creating a REST API using Couchbase 7, NodeJS, and TypeScript. If you have not seen nor read the first part, you're encouraged to read it first <LinkInPage href='https://jeffsegovia.dev/blogs/rest-api-using-nodejs-and-typescript'  text='here'/>.
+
+## Introduction
+
+We don't want our database to become polluted with incomplete, unsanitized, and/or unexpected data. Moreover, we also want to return meaningful error messages to the requesting clients if a bad request is sent from them or if an error has occured on the server. For this reason, every RESTful service must be able to validate requests from the clients.
+
+## Enter Zod: A TypeScript-first Validation Library
+
+There are many validation libraries out there for JavaScript or TypeScript projects. But to provide validations in the REST API that we have created in this <LinkInPage href='https://jeffsegovia.dev/blogs/rest-api-using-nodejs-and-typescript'  text='post'/>, we'll be using <LinkInPage href='https://zod.dev/' text='Zod' />. According to its documentation, Zod is a:
+
+> TypeScript-first schema validation with static type inference
+
+That's compelling right? I'll tell you, Zod lives up to what is said in its docs.
+
+### Our goals
+
+We'll use Zod to achieve the ff. goals:
+
+1. Create a schema for the User entity with validation rules;
+2. Create a validation middleware for our POST and PATCH requests;
+3. Return meaningful error messages to the requesting cleint.
+
+So now, let's install Zod by simply running:
+
+```shell showLineNumbers
+npm install zod
+```
+
+## Defining a Schema
+
+Once Zod is installed, create a `schema.ts` file inside the _models_ folder. Remember that in Part 1 of this post, our User interface looks like this:
+
+```ts showLineNumbers
+// models/user.ts
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: 'admin' | 'customer' | 'vendor';
+}
+```
+
+We create a schema for that as follows:
+
+```ts title="schema.ts" showLineNumbers
+import { z } from 'zod';
+
+export const UserSchema = z.object({
+  name: z
+    .string({
+      required_error: 'Name is required',
+    })
+    .trim()
+    .min(1, 'Name cannot be empty'),
+  email: z
+    .string({
+      required_error: 'Email is required',
+    })
+    .trim()
+    .min(1, 'Email cannot be empty')
+    .email('Invalid email'),
+  role: z.enum(['admin', 'customer', 'vendor'], {
+    errorMap: (issue, ctx) => {
+      return { message: 'Invalid role' };
+    },
+  }),
+});
+```
+
+So what's happening here? Zod has <LinkInPage href='https://zod.dev/?id=primitives' text='primitives' /> which help us define the data type of each property of our object or enitity (i.e. User). Zod also gives us a way to define validation rules which will be used by Zod's schema methods such as `.parse` to validate an object.
+
+What we have defined so far is a schema but we can easily infer our desired object shape from it by simply inferring that from the schema.
+
+```ts title="schema.ts" showLineNumbers
+export type User = z.infer<typeof UserSchema>;
+```
+
+But if you hover over the type `User`, you'll see that the inferred type is equivalent to this:
+
+```ts showLineNumbers
+type User = {
+  name: string;
+  email: string;
+  role: 'admin' | 'customer' | 'vendor';
+};
+```
+
+Do you see what's missing there? the ID! But we can easily fix that by doing the ff.:
+
+```ts title="schema.ts" showLineNumbers
+// define a schema for ID
+const HasID = z.object({ id: z.string() });
+
+// merge HasID with UserSchema
+const UserWithId = UserSchema.merge(HasID);
+
+// infer User from UserWithId
+export type User = z.infer<typeof UserWithId>;
+```
+
+Type `User` is now correct:
+
+```ts showLineNumbers
+type User = {
+  id: string;
+  name: string;
+  email: string;
+  role: 'admin' | 'customer' | 'vendor';
+};
+```
+
+And just like that, our first goal is achieved.
+
+## Deriving Shapes for Data Transfer Object (DTO)
+
+Now, onto our next goal which is to create a validation middleware for our POST and PATCH requests. Before we can do that, we must first define the shape of the user object which we expect to be transferred by the client. A data transfer object or DTO is just an object which carries data between processes and it is important that we define and validate its shape in our API. We derived such shapes as follows:
+
+```ts title="schema.ts" showLineNumbers
+export type CreateUserDto = z.infer<typeof UserSchema>;
+
+export const PartialUserSchema = UserSchema.partial();
+
+export type UpdateUserDto = z.infer<typeof PartialUserSchema>;
+```
+
+For POST request, we don't need an ID for that should be automatically generated so the `CreateUserDto` is simply inferred from the `UserSchema`. For the PATCH request, we don't require the client to transfer the whole User object, only the properties that need to be updated. For this reason, by using Zod's `schema.partial()` method, we can make all the properties of UserSchema optional. This is quite similar to TypeScript's built-in `Partial<T>` utility.
+
+Now that that's ready, let's refactor the `create` and `update` methods in the user model file:
+
+```ts showLineNumbers {2, 4, 15}
+// models/user.ts
+import { User, CreateUserDto, UpdateUserDto } from './schema';
+
+const create = (user: CreateUserDto) => {
+  const id = Date.now().toString();
+
+  const newUser = { id, ...user };
+
+  userData.push(newUser);
+
+  return newUser;
+};
+
+// UPDATE
+const update = (id: string, user: UpdateUserDto) => {
+  // Note: there are other ways to do this!
+  const indexOfUserToUpdate = userData.findIndex((u) => u.id === id);
+  const userToUpdate = userData[indexOfUserToUpdate];
+  userData.splice(indexOfUserToUpdate, 1, { ...userToUpdate, ...user });
+
+  return userData[indexOfUserToUpdate];
+};
+```
+
+## Validation Middleware
+
+For starters, a middleware is simply a function that has access to the request and response objects in the application's request-response cycle.
+
+Now create a folder called `middlewares` in your root directory then create a file named as `validate.ts` inside it. Write the ff. code in it:
+
+```ts showLineNumbers
+// middlewares/validate.ts
+
+import { Request, Response, NextFunction } from 'express';
+import { z } from 'zod';
+
+export const validate =
+  (schema: z.AnyZodObject | z.ZodOptional<z.AnyZodObject>) =>
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      await schema.parseAsync(req.body);
+      next();
+    } catch (error) {
+      let err = error;
+      if (err instanceof z.ZodError) {
+        err = err.issues.map((e) => ({ path: e.path[0], message: e.message }));
+      }
+      return res.status(409).json({
+        status: 'failed',
+        error: err,
+      });
+    }
+  };
+```
+
+Our validate middleware is a function that accepts a Zod schema and returns a request handler function. What it does is asynchronously parsing the request body then validates it against the provided schema. If the validation succeeds, we simply call the next middleware function which is actually the controller method (a controller is also a middleware, basically). But if it fails, we simply map the `err.issues` array to a new array of objects and we're responding to the client with status 409 which means conflict along with the array of error objects.
+
+Let's now use this middleware. First, inside the models folder create a file called `validator.ts` and write the ff. code in it:
+
+```ts showLineNumbers
+// models/validator.ts
+
+import { validate } from '../middlewares/validate';
+import { PartialUserSchema, UserSchema } from './schema';
+
+export const validateUserCreate = validate(UserSchema);
+
+export const validateUserUpdate = validate(PartialUserSchema);
+```
+
+Then in our routes we must register our validation middlewares in the POST and PATCH routes.
+
+```ts showLineNumbers {5, 9, 14}
+// routes/user.ts
+
+import { Router } from 'express';
+import userController from '../controllers/user';
+import { validateUserCreate, validateUserUpdate } from '../models/validator';
+
+const userRouter = Router();
+
+userRouter.route('/').get(userController.getAll).post(validateUserCreate, userController.create);
+
+userRouter
+  .route('/:id')
+  .get(userController.findbyId)
+  .patch(validateUserUpdate, userController.update)
+  .delete(userController.remove);
+
+export default userRouter;
+```
+
+Our API is now equipped with validation. Let's test it using Postman:
+
+A request body that looks like this:
+
+```json showLineNumbers
+{
+  "name": "",
+  "email": "",
+  "role": "customer"
+}
+```
+
+returns a response like this:
+
+```json showLineNumbers
+{
+  "status": "failed",
+  "error": [
+    {
+      "path": "name",
+      "message": "Name cannot be empty"
+    },
+    {
+      "path": "email",
+      "message": "Email cannot be empty"
+    },
+    {
+      "path": "email",
+      "message": "Invalid email"
+    }
+  ]
+}
+```
+
+While a request object that looks like this:
+
+```json showLineNumbers
+{
+  "name": "John Doe",
+  "email": "john_email",
+  "role": "manager"
+}
+```
+
+returns a response like this:
+
+```json showLineNumbers
+{
+  "status": "failed",
+  "error": [
+    {
+      "path": "email",
+      "message": "Invalid email"
+    },
+    {
+      "path": "role",
+      "message": "Invalid role"
+    }
+  ]
+}
+```
+
+These responses prove that our validation works!
+
+But if the data in our request body is correct, the validation succeeds and will proceed to the controller method to further process the request.
+
+## Conclusion
+
+Every RESTful service must be equipped with validation in order to ensure that we're only receiving and processing correct information from the client. Zod is a great library that can help any developer achieve common validation requirements with ease.
+
+This post is linked to the following post:
+
+<LinkToPart
+  href='https://jeffsegovia.dev/blogs/rest-api-using-nodejs-and-typescript'
+  title='REST API Using NodeJs And TypeScript'
+  subtitle='Part 1'
+  direction='prev'
+/>

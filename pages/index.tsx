@@ -1,6 +1,5 @@
 import type { GetStaticProps, NextPage, InferGetStaticPropsType } from 'next';
 import Image from 'next/image';
-import Link from 'next/link';
 
 import BlogCard from '@components/BlogCard';
 import getSortedPosts, { type PostWithoutBody } from '@lib/getSortedPosts';
@@ -42,8 +41,21 @@ const Home: NextPage<HomePageProps> = ({ posts }) => {
             <BlogCard key={post._id} post={post} />
           ))}
         </div>
-        <div className='my-10'>
+        <div className='py-10'>
           <CallToActionLink href='/blogs'>Browse All Posts</CallToActionLink>
+        </div>
+      </section>
+
+      {/* Call to go to Snippets */}
+      <section className='my-10'>
+        <h2 className='text-4xl font-bold mb-6'>Want a quick look to code snippets?</h2>
+        <p className='text-gray-800 py-3 md:text-lg dark:text-gray-100'>
+          I have curated a list of code snippets which I have found helpful in my dev journey. It is
+          my hope that you will also find these useful and that these will help you be more
+          productive in your day-to-day work as a developer. Happy coding!
+        </p>
+        <div className='py-10'>
+          <CallToActionLink href='/snippets'>Take me to Snippets</CallToActionLink>
         </div>
       </section>
     </>
