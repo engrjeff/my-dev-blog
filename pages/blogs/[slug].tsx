@@ -18,11 +18,15 @@ const AudioPlayerExample = dynamic(() => import("@components/AudioPlayer"), {
   ssr: false,
 });
 
+const CarouselExample = dynamic(() => import("@components/Carousel"), {
+  ssr: false,
+});
+
 const BlogScreen: NextPage<{ post: Post }> = ({ post }) => {
   const MDXContent = useMDXComponent(post.body.code);
 
   return (
-    <div className="relative">
+    <div className='relative'>
       <NextSeo
         title={post.title}
         description={post.description}
@@ -37,14 +41,14 @@ const BlogScreen: NextPage<{ post: Post }> = ({ post }) => {
           ],
         }}
       />
-      <BackButton backTo="/blogs" label="back to blogs list" />
+      <BackButton backTo='/blogs' label='back to blogs list' />
       <Article>
-        <h1 className="font-medium inline mb-0">{post.title}</h1>
-        <div className="text-xs uppercase text-gray-400 flex items-center gap-4 mb-6 md:mb-10">
+        <h1 className='font-medium inline mb-0'>{post.title}</h1>
+        <div className='text-xs uppercase text-gray-400 flex items-center gap-4 mb-6 md:mb-10'>
           <time>{post.publishedAt}</time>&mdash;
           <p>{post.timeToRead}</p>
         </div>
-        <div className="text-justify">
+        <div className='lg:text-justify'>
           <MDXContent
             components={{
               BannerImage,
@@ -53,6 +57,7 @@ const BlogScreen: NextPage<{ post: Post }> = ({ post }) => {
               Alert,
               LinkToPart,
               AudioPlayerExample,
+              CarouselExample,
             }}
           />
         </div>
