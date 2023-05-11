@@ -1,0 +1,365 @@
+---
+title: Building A Carousel With ReactJS
+description: Tutorial on how to create a carousel using ReactJS and the Embla Carousel library
+author: Jeff Segovia
+bannerUrl: https://res.cloudinary.com/abide-in-the-vine/image/upload/v1683804192/react-carousel-banner_mdrlup.png
+publishedAt: May 11, 2023
+tags:
+  - ReactJS
+  - UI
+---
+
+export const bannerUrl =
+  "https://res.cloudinary.com/abide-in-the-vine/image/upload/v1683804192/react-carousel-banner_mdrlup.webp";
+
+<BannerImage src={bannerUrl} alt='Building A Carousel With ReactJS' />
+
+## Introduction
+
+In this post we'll build a simple image carousel. You will see how easy it is to implement if we wll leverage the power of a library called _Embla Carousel_.
+
+So what is Embla? According to its documentation,
+
+> Embla Carousel is a library agnostic, dependency free and lightweight carousel library. It aims to solve the hardest technical challenges with building carousels, and the rest is up to the user utilizing its highly extensible API and plugins. Embla Carousel works in all modern browsers.
+
+Being library agnostic, it means that it can work with most modern UI libraries or frameworks such as ReactJS and Vue. In fact, it has a wrapper for React, Vue, and Svelte. It is also available via CDN.
+
+## Building the Image Carousel
+
+Okay, let us begin making the carousel. The finished UI will be like the one below.
+
+<CarouselExample />
+
+As you can notice, it has the main image slider, previous and next buttons, clickable dots as indicators, and the thumbnails at the bottom which when clicked can scroll the main slider to the selected item.
+
+Before we get started, note that this example uses Typescript and TailwindCSS. But don't worry since it will surely work even with plain JavaScript and any styling technique or approach you like should work as well.
+
+### Creating the Container
+
+The container is a simple a `div` with a class of `overflow: hidden`. Inside it is another `div` with a display property of `flex`. These classes or styles are essential for this to work. These are also prescribed in the docs <LinkInPage text="here" href="https://www.embla-carousel.com/get-started/react/#styling-the-carousel" />.
+
+```tsx showLineNumbers
+export default function ImageCarousel() {
+  return (
+    <div className='overflow-hidden'>
+      <div className='flex'>Slides will go here</div>
+    </div>
+  );
+}
+```
+
+### Render the images as the Slides
+
+Given an array of objects, in this case an array of image data, we just loop through it to render an `img` element which will serve as a slide.
+
+```tsx showLineNumbers
+const slides = [
+  { url: "/image-1.png" },
+  { url: "/image-2.png" },
+  { url: "/image-3.png" },
+  { url: "/image-4.png" },
+  { url: "/image-5.png" },
+];
+
+export default function ImageCarousel() {
+  return (
+    <div className='overflow-hidden'>
+      <div className='flex'>
+        {slides.map((slide, index) => (
+          <div key={index} className='flex-[0_0_100%] aspect-video mx-4'>
+            <img
+              src={slide.url}
+              alt='sample'
+              className='w-full h-full object-cover rounded-lg'
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+```
+
+Here we render each image having its wrapping container with an aspect ratio of 16 / 9 which has an equivalent class name of `aspect-video` in TailwindCSS. The class `mx-4` (margin: 0 16px) is added so that there is a gap between each slide.
+
+## Using Embla Carousel
+
+Now, install the Embla Carousel package for React.
+
+```shell showLineNumbers
+npm install embla-carousel-react
+```
+
+Next, import the `useEmblaCarousel` hook as follows then initialize it inside our component. The hook returns two values: a `ref` to grab the carousel container and the api itself from which we can access and use different methods and properties. This api gives us so much control so we can achieve the carousel implementation that we want.
+
+```tsx showLineNumbers {1,4,7}
+import useEmblaCarousel from "embla-carousel-react";
+
+export default function ImageCarousel() {
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
+
+  return (
+    <div className='overflow-hidden' ref={emblaRef}>
+      <div className='flex'>
+        {slides.map((slide, index) => (
+          <div key={index} className='flex-[0_0_100%] aspect-video mx-4'>
+            <img
+              src={slide.url}
+              alt='sample'
+              className='w-full h-full object-cover rounded-lg'
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+```
+
+That's it! I mean if your goal is just to render a simple carousel, you're actually done. But who says we can stop here? Let us add more functionalities.
+
+### Adding the Previous and Next buttons
+
+Now let us add the previous and next buttons. These will be rounded buttons which are absolutely positioned. For these to be positioned properly, we need to wrap our existing container with another `div` and set a class of `relative` (position: relative) to it.
+
+```tsx showLineNumbers {2,7-13,16,17-30,34}
+import useEmblaCarousel from "embla-carousel-react";
+import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/solid";
+
+export default function ImageCarousel() {
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
+
+  const handlePrevious = () => {
+    emblaApi?.scrollPrev();
+  };
+
+  const handleNext = () => {
+    emblaApi?.scrollNext();
+  };
+
+  return (
+    <div className='relative'>
+      <button
+        aria-label='go to previous slide'
+        onClick={handlePrevious}
+        className='h-8 w-8 rounded-full flex items-center justify-center bg-white bg-opacity-40  absolute top-1/2 -translate-y-1/2 z-10 shadow-md left-4 text-black'
+      >
+        <ChevronLeftIcon className='w-5 h-5' />
+      </button>
+      <button
+        aria-label='go to next slide'
+        onClick={handleNext}
+        className='h-8 w-8 rounded-full flex items-center justify-center bg-white bg-opacity-40 absolute top-1/2 -translate-y-1/2 z-10 shadow-md right-4 text-black'
+      >
+        <ChevronRightIcon className='w-5 h-5' />
+      </button>
+      <div className='overflow-hidden' ref={emblaRef}>
+        <div className='flex'>Slides here</div>
+      </div>
+    </div>
+  );
+}
+```
+
+### Creating the Dots
+
+The dots are just rounded buttons with an `onClick` handler to scroll to the selected index.
+
+```tsx showLineNumbers
+const [selectedIndex, setSelectedIndex] = React.useState(0);
+
+const updateCurrent = () => {
+  if (!emblaApi) return;
+  setSelectedIndex(emblaApi.selectedScrollSnap());
+};
+
+const handleDotClick = (index: number) => {
+  if (!emblaApi) return;
+  emblaApi.scrollTo(index);
+
+  updateCurrent();
+};
+
+<div className='flex justify-center gap-3'>
+  {slides.map((slide, index) => (
+    <button
+      key={index}
+      onClick={() => handleDotClick(index)}
+      className={`w-3 h-3 rounded-full ${
+        index === selectedIndex ? "bg-slate-500" : "bg-slate-800"
+      }`}
+    >
+      <span className='sr-only'>go to slide {index + 1}</span>
+    </button>
+  ))}
+</div>;
+```
+
+Everytime we click a dot, we want to scroll to the corresponding slide of the selected index. For this, we defined a handler called `handleDotClick` which receives an `index` as an argument. Note also the `updateCurrent` function and the introduction of a state called `selectedIndex`. We will use this state to keep track of the current slide so we can set conditional styles for the currently selected dot and thumbnail (we'll go here later). We also need to update the `handlePrevious` and `handleNext` functions so that when these are invoked, the `selectedIndex` state will get updated as well.
+
+```tsx showLineNumbers {4,10}
+const handlePrevious = () => {
+  emblaApi?.scrollPrev();
+
+  updateCurrent();
+};
+
+const handleNext = () => {
+  emblaApi?.scrollNext();
+
+  updateCurrent();
+};
+```
+
+### Adding the clickable thumbnails
+
+The last feature that we want is a clickable and scrollable thumbnail under the carousel dots indicators.
+Since, it is also basically a carousel by itself, we need another instance of the `useEmblaCarousel` hook.The `containScroll: 'keepSnaps'` is needed to clear leading and trailing empty space that causes excessive scrolling. The `dragFree: true` option value is to enable momentum scrolling. The duration of the continued scrolling is proportional to how vigorous the drag gesture is - docs.
+
+The `ref` value that it returns is needed to be assigned to the container of the thumbnails carousel. The class `flex-[0_0_26%]` means that each slide will grow by 26% of its container's width. This is necessary for a couple of slides to appear in one frame.
+
+The `onClick` handler for each thumbnail is also the `handleDotClick` function since the same logic is desired when a thumbnail is clicked.
+
+```tsx showLineNumbers {6-9,14-16,28,85-108}
+import useEmblaCarousel from "embla-carousel-react";
+
+export default function ImageCarousel() {
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
+
+  const [emblaThumbsRef, emblaThumbsApi] = useEmblaCarousel({
+    containScroll: "keepSnaps",
+    dragFree: true,
+  });
+
+  const [selectedIndex, setSelectedIndex] = React.useState(0);
+
+  const updateCurrent = () => {
+    if (!emblaApi || !emblaThumbsApi) return;
+    setSelectedIndex(emblaApi.selectedScrollSnap());
+    emblaThumbsApi.scrollTo(emblaApi.selectedScrollSnap());
+  };
+
+  const handlePrevious = () => {
+    ...
+  };
+
+  const handleNext = () => {
+    ...
+  };
+
+  const handleDotClick = (index: number) => {
+    if (!emblaApi || !emblaThumbsApi) return;
+    emblaApi.scrollTo(index);
+
+    updateCurrent();
+  };
+
+  return (
+    <div className='space-y-6'>
+      <div className='relative'>
+        // buttons
+        <button
+          aria-label='go to previous slide'
+          onClick={handlePrevious}
+          className='...'
+        >
+          <ChevronLeftIcon className='w-5 h-5' />
+        </button>
+        <button
+          aria-label='go to next slide'
+          onClick={handleNext}
+          className='...'
+        >
+          <ChevronRightIcon className='w-5 h-5' />
+        </button>
+
+        // main slides
+        <div className='overflow-hidden' ref={emblaRef}>
+          <div className='flex'>
+            {slides.map((slide, index) => (
+              <div key={index} className='flex-[0_0_100%] aspect-video mx-4'>
+                <img
+                  src={slide.url}
+                  alt='sample'
+                  className='w-full h-full object-cover rounded-lg'
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+        // dots
+      <div className='flex justify-center gap-3'>
+        {slides.map((slide, index) => (
+          <button
+            key={index}
+            onClick={() => handleDotClick(index)}
+            className={`w-3 h-3 rounded-full ${
+              index === selectedIndex ? "bg-slate-500" : "bg-slate-800"
+            }`}
+          >
+            <span className='sr-only'>go to slide {index + 1}</span>
+          </button>
+        ))}
+      </div>
+
+      // thumbnails
+      <div className='overflow-hidden' ref={emblaThumbsRef}>
+        <div className='flex gap-3'>
+          {slides.map((thumb, index) => (
+            <button
+              key={index}
+              onClick={() => handleDotClick(index)}
+              className='flex-[0_0_26%]'
+            >
+              <span className='sr-only'>scroll to slide {index + 1}</span>
+              <div
+                className={`w-full ${
+                  index === selectedIndex ? "opacity-100" : "opacity-40"
+                }`}
+              >
+                <img
+                  src={thumb.url}
+                  alt='thumbnail'
+                  className='object-cover rounded-lg'
+                />
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
+That's it and we're done. The final image carousel should look and behave like the one below:
+
+<CarouselExample />
+
+## Code
+
+You can play around this simple project by forking the ff. playground in Stackblitz.
+
+<LinkInPage
+  text='React Carousel Stackblitz Playground'
+  href='https://stackblitz.com/edit/vite-react-tailwind-5a5gl9?file=src/App.jsx'
+/>{" "}
+
+### Reference
+
+For more information about the Embla Carousel library, visit its documentation by clicking the following link:
+
+<LinkInPage
+  text='Embla Carousel Documentation'
+  href='https://www.embla-carousel.com/get-started/'
+/>{" "}
+
+## Conclusion
+
+Carousel is a common UI pattern in many websites today. Embla Carousel is a powerful library that a developer can use to create carousel or slider UIs.
+
+I hope you'll benefit from this little tutorial. As always, happy coding and to God be the glory!
+
+-jep
