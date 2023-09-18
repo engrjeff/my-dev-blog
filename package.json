@@ -12,6 +12,7 @@
   "dependencies": {
     "@heroicons/react": "^2.0.18",
     "@tailwindcss/line-clamp": "^0.4.2",
+    "class-variance-authority": "^0.6.1",
     "classnames": "^2.3.2",
     "contentlayer": "^0.2.7",
     "date-fns": "^2.29.3",
@@ -29,7 +30,8 @@
     "rehype-autolink-headings": "^6.1.1",
     "rehype-pretty-code": "^0.3.2",
     "rehype-slug": "^5.0.1",
-    "shiki": "^0.11.1"
+    "shiki": "^0.11.1",
+    "tailwind-merge": "^1.13.2"
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.7",

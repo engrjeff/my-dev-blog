@@ -22,6 +22,10 @@ const CarouselExample = dynamic(() => import("@components/Carousel"), {
   ssr: false,
 });
 
+const TypographyExample = dynamic(() => import("@components/Typography"), {
+  ssr: false,
+});
+
 const BlogScreen: NextPage<{ post: Post }> = ({ post }) => {
   const MDXContent = useMDXComponent(post.body.code);
 
@@ -58,6 +62,7 @@ const BlogScreen: NextPage<{ post: Post }> = ({ post }) => {
               LinkToPart,
               AudioPlayerExample,
               CarouselExample,
+              TypographyExample,
             }}
           />
         </div>

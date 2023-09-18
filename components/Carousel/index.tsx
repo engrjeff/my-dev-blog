@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/solid";
 
@@ -13,11 +13,18 @@ function Carousel() {
 
   const [selectedIndex, setSelectedIndex] = useState(0);
 
-  const updateCurrent = () => {
+  const updateCurrent = useCallback(() => {
     if (!emblaApi || !emblaThumbsApi) return;
     setSelectedIndex(emblaApi.selectedScrollSnap());
     emblaThumbsApi.scrollTo(emblaApi.selectedScrollSnap());
-  };
+  }, [emblaApi, emblaThumbsApi]);
+
+  useEffect(() => {
+    if (!emblaApi) return;
+    updateCurrent();
+    emblaApi.on("select", updateCurrent);
+    emblaApi.on("reInit", updateCurrent);
+  }, [emblaApi, updateCurrent]);
 
   const handlePrevious = () => {
     emblaApi?.scrollPrev();
