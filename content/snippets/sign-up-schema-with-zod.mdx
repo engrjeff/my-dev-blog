@@ -1,0 +1,81 @@
+---
+title: Sign up Schema with Zod
+description: Sign up schema using zod validation library
+author: Jeff Segovia
+tags:
+  - validation
+  - form
+---
+
+## Code Snippet
+
+```tsx title="signup-schema.ts" showLineNumbers
+import { isValid, parse } from 'date-fns';
+import * as z from 'zod';
+
+// validates date
+function validateDate(dateStr: any) {
+  if (!dateStr) return true;
+
+  const parsedDate = parse(dateStr, 'MM/dd/yyyy', new Date());
+  const isOk = isValid(parsedDate);
+
+  if (isOk) {
+    if (parsedDate.getFullYear() > new Date().getFullYear()) {
+      return false;
+    }
+
+    return true;
+  }
+}
+
+export const signupSchema = z
+  .object({
+    email: z
+      .string({ required_error: 'Please fill in this field.' })
+      .min(1, { message: 'Please fill in this field.' })
+      .email({
+        message: 'Please enter a valid email address (Ex: johndoe@domain.com).',
+      }),
+    firstname: z
+      .string({ required_error: 'Please fill in this field.' })
+      .min(1, { message: 'Please fill in this field.' }),
+    lastname: z
+      .string({ required_error: 'Please fill in this field.' })
+      .min(1, { message: 'Please fill in this field.' }),
+    date_of_birth: z.string().optional(),
+    password: z
+      .string({ required_error: 'Please fill in this field.' })
+      .min(8, { message: 'Must be a minimum of 8 characters.' }),
+    confirmPassword: z
+      .string({ required_error: 'Please fill in this field.' })
+      .min(8, { message: 'Must be a minimum of 8 characters.' }),
+    is_subscribed: z.boolean().default(false),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Your passwords don't match",
+    path: ['confirmPassword'],
+  })
+  .refine(({ date_of_birth }) => validateDate(date_of_birth), {
+    message: 'Please enter a valid date',
+    path: ['date_of_birth'],
+  });
+
+// infer type
+type SignUpInput = z.infer<typeof signupSchema>;
+```
+
+## Usage
+
+```tsx title="SignUp.tsx" showLineNumbers
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Controller, FieldErrors, useForm } from 'react-hook-form';
+
+export function SignUp() {
+  const form = useForm<SignUpInput>({
+    resolver: zodResolver(signupSchema),
+  });
+
+  return <form></form>;
+}
+```

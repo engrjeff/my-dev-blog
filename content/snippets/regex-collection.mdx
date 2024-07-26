@@ -1,0 +1,30 @@
+---
+title: RegEx Collection
+description: A collection of Regular Expressions that I use for my projects.
+author: Jeff Segovia
+tags:
+  - validation
+  - regex
+---
+
+## 1. Digits Only
+
+### Code
+
+```ts
+const areDigitsOnly = (input: any) => new RegExp(/^[0-9]*$/).test(input);
+```
+
+### Example
+
+```ts
+function handleChange(event: ChangeEvent<HTMLInputElement>) {
+  const value = e.currentTarget.value;
+
+  if (areDigitsOnly(value)) {
+    console.log('Digits!');
+  } else {
+    console.log('Not all digits');
+  }
+}
+```
