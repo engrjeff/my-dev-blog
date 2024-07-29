@@ -1,28 +1,34 @@
-import { allPosts, type Post } from "@contentlayer/generated";
-import type { GetStaticProps, GetStaticPaths, NextPage } from "next";
-import { useMDXComponent } from "next-contentlayer/hooks";
-import { NextSeo } from "next-seo";
-import dynamic from "next/dynamic";
+import { allPosts, type Post } from '@contentlayer/generated';
+import type { GetStaticPaths, GetStaticProps, NextPage } from 'next';
+import { useMDXComponent } from 'next-contentlayer/hooks';
+import { NextSeo } from 'next-seo';
+import dynamic from 'next/dynamic';
 
-import BannerImage from "@components/BannerImage";
-import LinkInPage from "@components/LinkInPage";
-import RelativeLink from "@components/RelativeLink";
-import ScrollToTopButton from "@components/ScrollToTopButton";
-import BackButton from "@components/BackButton";
-import Article from "@components/Article";
-import Alert from "@components/Alert";
-import LinkToPart from "@components/LinkToPart";
+import Alert from '@components/Alert';
+import Article from '@components/Article';
+import BackButton from '@components/BackButton';
+import BannerImage from '@components/BannerImage';
+import {
+  InputWithFloatingLabel,
+  InputWithFloatingLabelA,
+  InputWithFloatingLabelB,
+  InputWithFloatingLabelC,
+} from '@components/InputWithFloatingLabel';
+import LinkInPage from '@components/LinkInPage';
+import LinkToPart from '@components/LinkToPart';
+import RelativeLink from '@components/RelativeLink';
+import ScrollToTopButton from '@components/ScrollToTopButton';
 
 // Example-specific contents
-const AudioPlayerExample = dynamic(() => import("@components/AudioPlayer"), {
+const AudioPlayerExample = dynamic(() => import('@components/AudioPlayer'), {
   ssr: false,
 });
 
-const CarouselExample = dynamic(() => import("@components/Carousel"), {
+const CarouselExample = dynamic(() => import('@components/Carousel'), {
   ssr: false,
 });
 
-const TypographyExample = dynamic(() => import("@components/Typography"), {
+const TypographyExample = dynamic(() => import('@components/Typography'), {
   ssr: false,
 });
 
@@ -30,7 +36,7 @@ const BlogScreen: NextPage<{ post: Post }> = ({ post }) => {
   const MDXContent = useMDXComponent(post.body.code);
 
   return (
-    <div className='relative'>
+    <div className="relative">
       <NextSeo
         title={post.title}
         description={post.description}
@@ -45,14 +51,14 @@ const BlogScreen: NextPage<{ post: Post }> = ({ post }) => {
           ],
         }}
       />
-      <BackButton backTo='/blogs' label='back to blogs list' />
+      <BackButton backTo="/blogs" label="back to blogs list" />
       <Article>
-        <h1 className='font-medium inline mb-0'>{post.title}</h1>
-        <div className='text-xs uppercase text-gray-400 flex items-center gap-4 mb-6 md:mb-10'>
+        <h1 className="font-medium inline mb-0">{post.title}</h1>
+        <div className="text-xs uppercase text-gray-400 flex items-center gap-4 mb-6 md:mb-10">
           <time>{post.publishedAt}</time>&mdash;
           <p>{post.timeToRead}</p>
         </div>
-        <div className='lg:text-justify'>
+        <div className="lg:text-justify">
           <MDXContent
             components={{
               BannerImage,
@@ -63,6 +69,10 @@ const BlogScreen: NextPage<{ post: Post }> = ({ post }) => {
               AudioPlayerExample,
               CarouselExample,
               TypographyExample,
+              InputWithFloatingLabel,
+              InputWithFloatingLabelA,
+              InputWithFloatingLabelB,
+              InputWithFloatingLabelC,
             }}
           />
         </div>

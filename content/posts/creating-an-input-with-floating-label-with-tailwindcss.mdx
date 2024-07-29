@@ -1,0 +1,405 @@
+---
+title: Creating an Input with Floating Label with TailwindCSS
+description: Learn how to create an HTML input field with a floating label using TailwindCSS.
+author: Jeff Segovia
+bannerUrl: https://res.cloudinary.com/abide-in-the-vine/image/upload/v1722246648/input-with-floating-label_guhpds.png
+publishedAt: July 29, 2024
+tags:
+  - TailwindCSS
+  - HTML
+  - CSS
+---
+
+export const bannerUrl =
+  'https://res.cloudinary.com/abide-in-the-vine/image/upload/v1722246648/input-with-floating-label_guhpds.webp';
+
+<BannerImage
+  src={bannerUrl}
+  alt="Creating an Input with Floating Label with TailwindCSS"
+/>
+
+## What we will build
+
+We will create the following input:
+
+1. Default
+
+```tsx showLineNumbers
+<InputWithFloatingLabel id="firstname_input" label="First Name" />
+```
+
+<br />
+
+<InputWithFloatingLabel id="firstname_input" label="First Name" />
+
+2. With Placeholder
+
+```tsx showLineNumbers
+<InputWithFloatingLabel
+  id="firstname_input"
+  label="First Name"
+  placeholder="Enter your first name"
+/>
+```
+
+<br />
+
+<InputWithFloatingLabel
+  id="firstname_input"
+  label="First Name"
+  placeholder="Enter your first name"
+/>
+
+3. With Error
+
+```tsx showLineNumbers
+<InputWithFloatingLabel
+  id="firstname_input"
+  label="First Name"
+  placeholder="Enter your first name"
+  error="First name is required."
+/>
+```
+
+<br />
+
+<InputWithFloatingLabel
+  id="firstname_input"
+  label="First Name"
+  placeholder="Enter your first name"
+  error="First name is required."
+/>
+
+## Creating the `<InputWithFloatingLabel />` component
+
+### Initial UI
+
+Let us start by simply rendering the input with the label and properly positioning the label.
+
+```tsx showLineNumbers
+import * as React from 'react';
+
+interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  label: string;
+}
+
+const InputWithFloatingLabel = React.forwardRef<HTMLInputElement, InputProps>(
+  ({ type = 'text', label, ...props }, ref) => {
+    return (
+      <div className="relative w-full flex-1">
+        <input
+          type={type}
+          className="h-[54px] block px-2.5 py-3 w-full text-sm bg-background border border-gray-700 appearance-none focus:outline-none focus:ring-1 focus:ring-primary disabled:bg-disabled-100 disabled:cursor-not-allowed disabled:text-disabled-100"
+          placeholder={props.placeholder ?? label}
+          {...props}
+          ref={ref}
+        />
+        <label
+          htmlFor={props.id}
+          className="pointer-events-none select-none absolute cursor-text text-sm text-gray-700 duration-300 px-1.5 bg-background left-1 top-1/2 -translate-y-1/2 z-[5]"
+        >
+          {label}
+        </label>
+      </div>
+    );
+  }
+);
+
+InputWithFloatingLabel.displayName = 'InputWithFloatingLabel';
+
+export { InputWithFloatingLabel };
+```
+
+This initial UI looks like the one below:
+
+<InputWithFloatingLabelA id="firstname_input" label="First Name" />
+
+Few things to note here:
+
+1. We use React's `forwardRef` in order to properly forward the `ref` prop to the HTML input element.
+2. We wrapped the HTML input and label with a `<div />` that has a class of `relative` so we the label element can be absolutely positioned.
+3. The interface `InputProps` is the extended `React.InputHTMLAttributes<HTMLInputElement>`. We added a `label` prop here which is a string.
+4. The default placeholder is the required `label` prop value. This is why the label element is displayed on top of the input placeholder.
+5. For accessibility purposes, the `id` attribute of the HTML input is the value of the label's `htmlFor` attribute.
+6. The label element has a class of `pointer-events-none` so that it does not block the focusable area of the input element where it was initially positioned.
+7. The label element has a class of `cursor-text` so when a user hovers over it, it will appear ready for editing.
+
+### Make the Label 'float' on input focus
+
+Since we need to style the label element based on the focus state of the input and since the label and the input are siblings inside a parent `<div>`, we use TailwindCSS' `peer` modifier.
+
+The class `origin-[0]` is added in the label so that its transform origin is at 0,0.
+
+```tsx showLineNumbers
+const InputWithFloatingLabel = React.forwardRef<HTMLInputElement, InputProps>(
+  ({ className, type = 'text', label, ...props }, ref) => {
+    return (
+      <div className="relative w-full flex-1">
+        <input
+          type={type}
+          className="/* other classes here */ peer"
+          placeholder={props.placeholder ?? label}
+          {...props}
+          ref={ref}
+        />
+        <label
+          htmlFor={props.id}
+          className="/* other classes here */ origin-[0] peer-focus:px-1.5 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-5 peer-focus:text-white peer-focus:bg-background"
+        >
+          {label}
+        </label>
+      </div>
+    );
+  }
+);
+```
+
+This yields to the ff. result:
+
+<InputWithFloatingLabelB id="firstname_input" label="First Name" />
+
+<Alert>
+  You can learn more about the `peer` modifier{'  '}
+  <LinkInPage
+    href="https://tailwindcss.com/docs/hover-focus-and-other-states#styling-based-on-sibling-state"
+    text=" here"
+  />
+</Alert>
+
+Now, try to enter a text in the input then click anywhere (removing the focus from the input). What did you notice? That's right, the label element came back to its original position thus covering the text.
+
+We can fix this by using TailwindCSS' `placeholder-shown` modifier.
+
+```tsx showLineNumbers
+const InputWithFloatingLabel = React.forwardRef<HTMLInputElement, InputProps>(
+  ({ className, type = 'text', label, ...props }, ref) => {
+    return (
+      <div className="relative w-full flex-1">
+        <input
+          type={type}
+          className="h-[54px] block px-2.5 py-3 w-full text-sm bg-transparent border border-gray-700 appearance-none focus:outline-none focus:ring-1 focus:ring-primary peer disabled:bg-disabled-100 disabled:cursor-not-allowed disabled:text-disabled-100 peer placeholder:invisible"
+          placeholder={props.placeholder ?? label}
+          {...props}
+          ref={ref}
+        />
+        <label
+          htmlFor={props.id}
+          className="pointer-events-none select-none absolute cursor-text text-sm text-gray-700 duration-300
+                    px-1.5 -translate-y-5 scale-75 bg-background left-1 top-2 z-[5] origin-[0]
+                    peer-focus:px-1.5 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-5 peer-focus:text-white peer-focus:bg-background
+                    peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2"
+        >
+          {label}
+        </label>
+      </div>
+    );
+  }
+);
+```
+
+Basically, what we did is use the initial label styles only when the input placeholder is shown. The placeholder of an HTML input becomes invisible when it gets focused. Then, we make the styles for making the label float the base styles.
+
+This yields to the ff. result:
+
+<InputWithFloatingLabelC id="firstname_input" label="First Name" />
+
+<Alert>
+  You can learn more about the `placeholder-shown` modifier{'  '}
+  <LinkInPage
+    href="https://tailwindcss.com/docs/hover-focus-and-other-states#placeholder-shown"
+    text=" here"
+  />
+</Alert>
+
+### Make the placeholder still visible even when the label is floating
+
+What if the user wants to provide a placeholder text that's different from the label text? We do by leveraging TailwindCSS' `data-*` modifier.
+
+When we provide a placeholder text, we set a custom `data-hasplaceholder` attribute a value of `true`.
+
+```tsx showLineNumbers
+<input
+  data-hasplaceholder={props.placeholder ? true : undefined}
+  type={type}
+  className="..."
+  placeholder={props.placeholder ?? label}
+  {...props}
+  ref={ref}
+/>
+```
+
+The next step is to show the placeholder when the input is focused and make it invisible otherwise.
+
+```tsx showLineNumbers
+<input
+  data-hasplaceholder={props.placeholder ? true : undefined}
+  type={type}
+  className="placeholder:text-gray-700 placeholder:invisible data-[hasplaceholder=true]:focus:placeholder:visible"
+  placeholder={props.placeholder ?? label}
+  {...props}
+  ref={ref}
+/>
+```
+
+Using TailwindCSS, we can have stackable modifiers like `data-[hasplaceholder=true]:focus` which means "when the input has data-hasplaceholder=true while it is focused, apply these classes". With these changes, we achieve thsi requirement.
+
+<InputWithFloatingLabelC
+  id="firstname_input"
+  label="First Name"
+  placeholder="Enter your first name"
+/>
+
+### Add Error state
+
+The first change is to adjust our props interface to include an `error` prop.
+
+```tsx showLineNumbers {3}
+interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  label: string;
+  error?: string;
+}
+```
+
+Then we adjust the Component:
+
+```tsx showLineNumbers {2, 18-20}
+const InputWithFloatingLabel = React.forwardRef<HTMLInputElement, InputProps>(
+  ({ className, type = 'text', label, error, ...props }, ref) => {
+    return (
+      <div className="flex-1">
+        <div className="relative w-full flex-1">
+          <input
+            type={type}
+            data-hasplaceholder={!!props.placeholder}
+            className="..."
+            placeholder={props.placeholder ?? label}
+            {...props}
+            ref={ref}
+          />
+          <label htmlFor={props.id} className="...">
+            {label}
+          </label>
+        </div>
+        {error ? (
+          <em className="not-italic text-red-500 text-xs">{error}</em>
+        ) : null}
+      </div>
+    );
+  }
+);
+```
+
+1. We wrap the whole markup with a `<div />`.
+2. We extract the `error` prop in line 2.
+3. We conditionally render the error inside an `<em />` element.
+
+This produces the ff.:
+
+```tsx showLineNumbers {5}
+<InputWithFloatingLabel
+  id="firstname_input"
+  label="First Name"
+  placeholder="Enter your first name"
+  error="First name is required."
+/>
+```
+
+Output:
+
+<InputWithFloatingLabelC
+  id="firstname_input"
+  label="First Name"
+  placeholder="Enter your first name"
+  error="First name is required."
+/>
+
+For accessibility purposes, we inform screen-readers that the input has invalid value by giving `aria-invalid` a value of `true` when an error is present. Then we add classes that depend on the state of the `aria-invalid` attribute.
+
+Then, we add an `id` to the `<em />` tag and point the `aria-describedby` attribute to that id.
+
+```tsx showLineNumbers {8,9,13}
+  <input
+    type={type}
+    data-hasplaceholder={props.placeholder ? true : undefined}
+    className="aria-[invalid=true]:border-red-500 focus:aria-[invalid=true]:ring-red-500 ..."
+    placeholder={props.placeholder ?? label}
+    {...props}
+    ref={ref}
+    aria-invalid={error ? true : undefined}
+    aria-describedby={`${props.id}_error`}
+  />
+
+  <em className="not-italic text-red-500 text-xs"
+      id={`${props.id}_error`}
+      >
+    {error}
+  </em>
+```
+
+<Alert>
+  You can learn more about the `aria-*` modifier{'  '}
+  <LinkInPage
+    href="https://tailwindcss.com/docs/hover-focus-and-other-states#aria-states"
+    text=" here"
+  />
+</Alert>
+
+## Final Code
+
+Code
+
+```tsx showLineNumbers
+import * as React from 'react';
+
+interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  label: string;
+  error?: string;
+}
+
+const InputWithFloatingLabel = React.forwardRef<HTMLInputElement, InputProps>(
+  ({ className, type = 'text', label, error, ...props }, ref) => {
+    return (
+      <div className="flex-1">
+        <div className="relative w-full flex-1">
+          <input
+            type={type}
+            data-hasplaceholder={props.placeholder ? true : undefined}
+            className="aria-[invalid=true]:border-red-500 h-[54px] focus:aria-[invalid=true]:ring-red-500 block px-2.5 py-3 w-full text-sm bg-transparent border border-gray-700 appearance-none focus:outline-none focus:ring-1 focus:ring-primary peer placeholder:text-gray-700 placeholder:invisible data-[hasplaceholder=true]:focus:placeholder:visible disabled:bg-disabled-100 disabled:cursor-not-allowed disabled:text-uidisabled"
+            placeholder={props.placeholder ?? label}
+            {...props}
+            ref={ref}
+            aria-invalid={error ? true : undefined}
+            aria-describedby={`${props.id}_error`}
+          />
+          <label
+            htmlFor={props.id}
+            className="pointer-events-none select-none absolute cursor-text *:hidden text-sm text-gray-700 duration-300 px-1.5 -translate-y-5 scale-75 bg-background left-1 top-2 z-[5] origin-[0] peer-focus:px-1.5 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-placeholder-shown:*:inline peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-5 peer-focus:text-white peer-focus:bg-background peer-focus:*:hidden rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto"
+          >
+            {label}
+          </label>
+        </div>
+        {error ? (
+          <em
+            className="not-italic text-red-500 text-xs"
+            id={`${props.id}_error`}
+          >
+            {error}
+          </em>
+        ) : null}
+      </div>
+    );
+  }
+);
+
+InputWithFloatingLabel.displayName = 'InputWithFloatingLabel';
+
+export { InputWithFloatingLabel };
+```
+
+## Conclusion
+
+TailwindCSS features different modifiers such as `focus`, `placeholder`, `placeholder-shown`, `peer`, `data-*`, `aria-*` and many more which a web developer can leverage in order to create UI styles and interactions without requiring any JavaScript.
+
+Happy coding!
+
+-jeff

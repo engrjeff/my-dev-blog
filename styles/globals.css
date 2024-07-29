@@ -9,4 +9,11 @@
     -webkit-tap-highlight-color: transparent;
     @apply scroll-smooth scroll-p-24 md:scroll-p-28;
   }
+
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active {
+    transition: background-color 5000s ease-in-out 0s;
+  }
 }
