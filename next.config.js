@@ -6,7 +6,8 @@ const nextConfig = {
   reactStrictMode: true,
   experimental: {
     outputFileTracingIncludes: {
-      '/actions/files.ts': ['./app', './components/FileTree/example'],
+      '/blogs/file-tree-component-using-react-server-components-and-tailwindcss':
+        ['./app', './components/FileTree/example'],
     },
   },
   swcMinify: true,
