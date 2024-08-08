@@ -1,6 +1,7 @@
 import { allPosts } from '@contentlayer/generated';
 import type { Metadata } from 'next';
 
+import { AppendCopy } from '@components/AppendCopy';
 import Article from '@components/Article';
 import ArticleContent from '@components/ArticleContent';
 import BackButton from '@components/BackButton';
@@ -55,6 +56,7 @@ function BlogScreen({ params }: { params: { slug: string } }) {
           <p>{post.timeToRead}</p>
         </div>
         <div className="lg:text-justify">
+          <AppendCopy />
           <ArticleContent post={post} />
         </div>
       </Article>

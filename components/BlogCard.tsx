@@ -16,6 +16,7 @@ const BlogCard = ({ post }: { post: Omit<Post, 'body'> }) => {
           alt={post.title + ' by ' + post.author}
           fill
           className="object-cover object-center"
+          sizes="(max-width: 768px) 100vw"
         />
       </Link>
       <div className="py-5 flex flex-col gap-2">
