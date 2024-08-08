@@ -4,12 +4,16 @@ const path = require('path');
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  output: 'standalone',
   experimental: {
-    outputFileTracingIncludes: {
-      '/blogs/file-tree-component-using-react-server-components-and-tailwindcss':
-        ['./app', './components/FileTree/example'],
-    },
+    turbotrace: {},
   },
+  // experimental: {
+  //   outputFileTracingIncludes: {
+  //     '/blogs/file-tree-component-using-react-server-components-and-tailwindcss':
+  //       ['./app', './components/FileTree/example'],
+  //   },
+  // },
   swcMinify: true,
   images: {
     remotePatterns: [
