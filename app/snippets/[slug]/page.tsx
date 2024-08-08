@@ -1,6 +1,7 @@
 import { allSnippets } from '@contentlayer/generated';
 import type { Metadata } from 'next';
 
+import { AppendCopy } from '@components/AppendCopy';
 import Article from '@components/Article';
 import BackButton from '@components/BackButton';
 import ScrollToTopButton from '@components/ScrollToTopButton';
@@ -46,6 +47,7 @@ function SnippetScreen({ params }: { params: { slug: string } }) {
           {snippet.description}
         </p>
         <div className="text-justify">
+          <AppendCopy />
           <SnippetContent snippet={snippet} />
         </div>
       </Article>
