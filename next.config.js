@@ -6,8 +6,7 @@ const nextConfig = {
   reactStrictMode: true,
   experimental: {
     outputFileTracingIncludes: {
-      '/file-tree-app': ['./app'],
-      '/file-tree-example': ['./components/FileTree/example'],
+      '/actions/files.ts': ['./app', './components/FileTree/example'],
     },
   },
   swcMinify: true,
