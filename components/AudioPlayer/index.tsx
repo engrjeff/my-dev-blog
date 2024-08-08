@@ -1,9 +1,11 @@
-import { useState } from "react";
+'use client';
 
-import AudioPlayer from "./AudioPlayer";
-import TrackItem from "./TrackItem";
+import { useState } from 'react';
 
-import { songs } from "./songs";
+import AudioPlayer from './AudioPlayer';
+import TrackItem from './TrackItem';
+
+import { songs } from './songs';
 
 function AudioPlayerExample() {
   const [currentSongIndex, setCurrentSongIndex] = useState(-1);

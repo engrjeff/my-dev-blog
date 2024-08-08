@@ -13,7 +13,7 @@ const BlogCard = ({ post }: { post: Omit<Post, 'body'> }) => {
           src={post.bannerUrl}
           blurDataURL={post.bannerUrl}
           placeholder="blur"
-          alt="banner"
+          alt={post.title + ' by ' + post.author}
           fill
           className="object-cover object-center"
         />

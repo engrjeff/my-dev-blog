@@ -17,7 +17,7 @@ function Home() {
               src="/me.jpg"
               alt="Jeff Segovia"
               fill
-              className="object-cover w-full h-fu ll"
+              className="object-cover w-full h-full"
             />
           </div>
           <div className="space-y-1">
@@ -25,7 +25,7 @@ function Home() {
               Jeff Segovia
             </h1>
             <p className="text-gray-900 text-sm md:text-lg font-light dark:text-gray-400">
-              Fullstack Software Engineer
+              Frontend Software Engineer
             </p>
             <MySocialLinks />
           </div>

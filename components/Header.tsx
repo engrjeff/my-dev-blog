@@ -5,7 +5,7 @@ import NavLinks from './NavLinks';
 
 const Header = () => {
   return (
-    <header className="backdrop-blur-lg py-6 md:py-8 sticky top-0 bg-white dark:bg-darkest/70 border-b border-gray-200 dark:border-gray-700 z-10">
+    <header className="backdrop-blur-lg py-6 md:py-8 sticky top-0 bg-white dark:bg-darkest/70 border-b border-gray-200 dark:border-gray-700 z-20">
       <nav className="flex container max-w-6xl items-center justify-between">
         <Link
           href="/"

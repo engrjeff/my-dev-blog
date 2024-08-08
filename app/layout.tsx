@@ -5,10 +5,9 @@ import Header from '@components/Header';
 import { bannerUrls } from '@lib/constants';
 import type { Metadata } from 'next';
 import { ThemeProvider } from 'next-themes';
-import { Inter } from 'next/font/google';
 import './globals.css';
 
-const inter = Inter({ subsets: ['latin'] });
+import NextTopLoader from 'nextjs-toploader';
 
 export const metadata: Metadata = {
   title: 'Jeff Segovia',
@@ -39,10 +38,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark antialiased">
+    <html lang="en" className="dark">
       <AppMetadata />
       <AppScripts />
       <body>
+        <NextTopLoader color="#f59e0b" showSpinner={false} />
         <ThemeProvider defaultTheme="dark" attribute="class">
           <div className="bg-white dark:bg-darkest">
             <Header />
