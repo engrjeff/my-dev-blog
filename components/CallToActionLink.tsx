@@ -1,5 +1,5 @@
-import { type ReactNode } from 'react';
 import Link, { type LinkProps } from 'next/link';
+import { type ReactNode } from 'react';
 
 interface CallToActionLinkProps {
   href: LinkProps['href'];
@@ -8,10 +8,11 @@ interface CallToActionLinkProps {
 
 const CallToActionLink = ({ href, children }: CallToActionLinkProps) => {
   return (
-    <Link href={href}>
-      <a className='bg-primary hover:bg-primary/95 text-white font-medium py-4 px-8 rounded-full shadow-md'>
-        {children}
-      </a>
+    <Link
+      href={href}
+      className="bg-primary hover:bg-primary/95 text-white font-medium py-4 px-8 rounded-full shadow-md inline-block"
+    >
+      {children}
     </Link>
   );
 };

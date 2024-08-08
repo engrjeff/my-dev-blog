@@ -5,7 +5,11 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   images: {
-    domains: ['res.cloudinary.com'],
+    remotePatterns: [
+      {
+        hostname: 'res.cloudinary.com',
+      },
+    ],
   },
   i18n: {
     locales: ['en'],
