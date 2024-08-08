@@ -35,15 +35,17 @@ export const generateMetadata = ({
   };
 };
 
-export const generateStaticParams = () => {
-  return allPosts
-    .map((post) => ({ slug: post.slug }))
-    .filter(
-      (s) =>
-        s.slug !==
-        'file-tree-component-using-react-server-components-and-tailwindcss'
-    );
-};
+// export const generateStaticParams = () => {
+//   return allPosts
+//     .map((post) => ({ slug: post.slug }))
+//     .filter(
+//       (s) =>
+//         s.slug !==
+//         'file-tree-component-using-react-server-components-and-tailwindcss'
+//     );
+// };
+
+export const dynamic = 'force-dynamic';
 
 function BlogScreen({ params }: { params: { slug: string } }) {
   const post = allPosts.find((post) => post.slug === params.slug);
