@@ -42,7 +42,7 @@ export function useAppendCopyButton() {
         copyCode(block);
         copybutton.textContent = 'Copied!';
         setTimeout(() => {
-          copybutton.textContent = 'Copy!';
+          copybutton.textContent = 'Copy';
         }, 2000);
       });
 
