@@ -1,18 +1,21 @@
+// @ts-nocheck
+
 import { type Post } from '@contentlayer/generated';
 import { useMDXComponent } from 'next-contentlayer/hooks';
-import dynamic from 'next/dynamic';
 
 import Alert from '@components/Alert';
 import BannerImage from '@components/BannerImage';
+import LinkInPage from '@components/LinkInPage';
+import LinkToPart from '@components/LinkToPart';
+import RelativeLink from '@components/RelativeLink';
+
 import {
   InputWithFloatingLabel,
   InputWithFloatingLabelA,
   InputWithFloatingLabelB,
   InputWithFloatingLabelC,
 } from '@components/InputWithFloatingLabel';
-import LinkInPage from '@components/LinkInPage';
-import LinkToPart from '@components/LinkToPart';
-import RelativeLink from '@components/RelativeLink';
+import dynamic from 'next/dynamic';
 
 // Example-specific contents
 const AudioPlayerExample = dynamic(() => import('@components/AudioPlayer'), {
@@ -20,10 +23,6 @@ const AudioPlayerExample = dynamic(() => import('@components/AudioPlayer'), {
 });
 
 const CarouselExample = dynamic(() => import('@components/Carousel'), {
-  ssr: false,
-});
-
-const TypographyExample = dynamic(() => import('@components/Typography'), {
   ssr: false,
 });
 
@@ -40,7 +39,6 @@ function ArticleContent({ post }: { post: Post }) {
         LinkToPart,
         AudioPlayerExample,
         CarouselExample,
-        TypographyExample,
         InputWithFloatingLabel,
         InputWithFloatingLabelA,
         InputWithFloatingLabelB,

@@ -4,9 +4,9 @@ import Footer from '@components/Footer';
 import Header from '@components/Header';
 import { bannerUrls } from '@lib/constants';
 import type { Metadata } from 'next';
-import { ThemeProvider } from 'next-themes';
 import './globals.css';
 
+import { Providers } from '@components/Providers';
 import NextTopLoader from 'nextjs-toploader';
 
 export const metadata: Metadata = {
@@ -43,7 +43,7 @@ export default function RootLayout({
       <AppScripts />
       <body>
         <NextTopLoader color="#f59e0b" showSpinner={false} />
-        <ThemeProvider defaultTheme="dark" attribute="class">
+        <Providers>
           <div className="bg-white dark:bg-darkest">
             <Header />
             <main className="py-6 md:py-10 container max-w-6xl">
@@ -51,7 +51,7 @@ export default function RootLayout({
             </main>
             <Footer />
           </div>
-        </ThemeProvider>
+        </Providers>
       </body>
     </html>
   );

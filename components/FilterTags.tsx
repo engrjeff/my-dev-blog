@@ -22,6 +22,7 @@ const FilterTags = ({ tags }: FilterTagsProps) => {
       if (!activeTags.includes(tag)) {
         params.append('tag', tag);
       } else {
+        // @ts-ignore
         params.delete('tag', tag);
       }
       router.replace(`${pathname}?${params.toString()}`);

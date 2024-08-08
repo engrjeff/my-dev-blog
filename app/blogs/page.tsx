@@ -5,6 +5,7 @@ import { bannerUrls } from '@lib/constants';
 import getSortedPosts from '@lib/getSortedPosts';
 import { getUniqueTagsFromPosts } from '@lib/helpers';
 import { Metadata } from 'next';
+import { Suspense } from 'react';
 
 export const metadata: Metadata = {
   title: 'Blogs - Jeff Segovia',
@@ -58,7 +59,9 @@ function BlogsPage({
         </p>
       </div>
       <Search query={searchQuery} />
-      <FilterTags tags={tags} />
+      <Suspense>
+        <FilterTags tags={tags} />
+      </Suspense>
       {filteredPosts.length === 0 && (
         <div>
           <p>No posts found. Try another keyword.</p>
