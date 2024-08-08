@@ -17,6 +17,8 @@ import {
 } from '@components/InputWithFloatingLabel';
 import dynamic from 'next/dynamic';
 
+import { FileTree } from '@components/FileTree/file-tree';
+
 // Example-specific contents
 const AudioPlayerExample = dynamic(() => import('@components/AudioPlayer'), {
   ssr: false,
@@ -43,6 +45,7 @@ function ArticleContent({ post }: { post: Post }) {
         InputWithFloatingLabelA,
         InputWithFloatingLabelB,
         InputWithFloatingLabelC,
+        FileTree,
       }}
     />
   );
