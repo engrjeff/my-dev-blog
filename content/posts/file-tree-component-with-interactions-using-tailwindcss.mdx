@@ -1,73 +1,56 @@
 ---
-title: FileTree Component using React Server Component and TailwindCSS
-description: Learn how to create a FileTree component while leveraging React Server Components (RSCs) and TailwindCSS.
+title: FileTree Component with interactions using TailwindCSS
+description: Learn how to create a FileTree component with interactions while leveraging the features of TailwindCSS.
 author: Jeff Segovia
-bannerUrl: https://res.cloudinary.com/abide-in-the-vine/image/upload/v1723130268/jeff%20dev%20blog/filetree_dqitos.png
-publishedAt: August 08, 2024
+bannerUrl: https://res.cloudinary.com/abide-in-the-vine/image/upload/v1723185893/jeff%20dev%20blog/filetree-post_l2u5yz.png
+publishedAt: August 09, 2024
 tags:
-  - RSC
   - TailwindCSS
-  - Next.js
+  - UI
 ---
 
 export const bannerUrl =
-  'https://res.cloudinary.com/abide-in-the-vine/image/upload/v1723130268/jeff%20dev%20blog/filetree_dqitos.webp';
+  'https://res.cloudinary.com/abide-in-the-vine/image/upload/v1723185893/jeff%20dev%20blog/filetree-post_l2u5yz.webp';
 
 <BannerImage
   src={bannerUrl}
-  alt="Learn how to create a FileTree component while leveraging React Server Components (RSCs) and TailwindCSS"
+  alt="Learn how to create a FileTree component with interactions while leveraging the features of TailwindCSS."
 />
 
 ## What we'll build
 
-<FileTree path="app" />
+<FileTree />
 
-First, note that it is a React Server Component and the file structure that it currently displays is the actual content of this site's `app` directory.
-
-## How to read a file directory?
-
-Surely, there are more than one way of approaching this. One way that I did is by using Node's `fs` module. We can do this since we are using a <LinkInPage text='React Server Component' href='https://react.dev/reference/rsc/server-components' /> .
-
-According to the React docs,
-
-> Server Components are a new type of Component that renders ahead of time, before bundling, in an environment separate from your client app or SSR server.
-
-Now, to read a specific file directory:
-
-```tsx title="files.ts" showLineNumbers
-'use server';
-
-import fs from 'fs';
-import path from 'path';
-
-export async function getFilesOfPath(...paths: string[]) {
-  const DIR = path.join(process.cwd(), ...paths);
-
-  const fileList = await new Promise<fs.Dirent[]>((resolve, reject) => {
-    fs.readdir(DIR, { encoding: 'utf8', withFileTypes: true }, (err, files) => {
-      if (err) reject(err);
-
-      resolve(files);
-    });
-  }).then((files) => files);
-
-  return fileList;
-}
-```
-
-Just pass in an existing, valid directory name and that server-side function will give us the directories under the path that we have provided. For example:
+We pass a directories object which is an array of `Directory` which has the ff. shape:
 
 ```tsx showLineNumbers
-const fileList = await getFilesOfPath('app');
+export type Directory = {
+  path: string;
+  name: string;
+  subfolders?: Directory[];
+};
+
+const directories: Directory[] = [
+  {
+    path: '/components',
+    name: 'components',
+    subfolders: [
+      {
+        path: '/components/features',
+        name: 'features',
+      },
+    ],
+  },
+];
 ```
 
-### Creating a `<FileList />` Component
+## Creating a `<FileList />` Component
 
 ```tsx title="file-list.tsx" showLineNumbers
+import { Directory } from './directory';
 import { cn } from '@lib/utils';
-import { type Dirent } from 'fs';
 
-export function FileList({ fileList }: { fileList: Dirent[] }) {
+export function FileList({ fileList }: { fileList: Directory[] }) {
   return (
     <ul className={cn('pl-6 select-none overflow-hidden text-sm')}>
       {fileList.map((file) => (
@@ -78,18 +61,18 @@ export function FileList({ fileList }: { fileList: Dirent[] }) {
 }
 ```
 
-The `<FileList />` receives a prop called `fileList` which is an array of type `Dirent` from the `fs` module.
+The `<FileList />` receives a prop called `fileList` which is an array of type `Directory`.
 
 ## Creating a `<FileNode />` Component
 
-Next, we create the `<FileNode />` which is responsibel for rendering each file directory.
+Next, we create the `<FileNode />` which is responsible for rendering each directory.
 
 ```tsx title="file-node.tsx" showLineNumbers
-import { type Dirent } from 'fs';
+import { Directory } from './directory';
 import { FileIcon, FolderIcon } from 'lucide-react';
 
-export function FileNode({ file }: { file: Dirent }) {
-  const isDirectory = file.isDirectory();
+export function FileNode({ directory }: { directory: Directory }) {
+  const isDirectory = directory.subfolders ? true : false;
 
   return (
     <li>
@@ -99,45 +82,45 @@ export function FileNode({ file }: { file: Dirent }) {
         ) : (
           <FileIcon className="size-4 text-sky-300" />
         )}
-        <span>{file.name}</span>
+        <span>{directory.name}</span>
       </div>
     </li>
   );
 }
 ```
 
-- It receives a `file` prop which is of type `Dirent`;
-- It renders a Folder icon besides the name if the file is a directory, a File icon is rendered otherwise.
+- It receives a `directory` prop which is of type `Directory`;
+- It renders a Folder icon besides the name if the directory has subfolder(s), a File icon is rendered otherwise.
 
 So then, we can replace the `li` in the `FileList` component with the `FileNode` component:
 
 ```tsx title="file-list.tsx" showLineNumbers {1,7}
 import { FileNode } from './file-node';
+import { Directory } from './directory';
 
-export function FileList({ fileList }: { fileList: Dirent[] }) {
+export function FileList({ fileList }: { fileList: Directory[] }) {
   return (
     <ul className={cn('pl-6 select-none overflow-hidden text-sm')}>
-      {fileList.map((file) => (
-        <FileNode key={file.path} file={file} />
+      {fileList.map((directory) => (
+        <FileNode key={directory.path} directory={directory} />
       ))}
     </ul>
   );
 }
 ```
 
-## Add Toggle behavior if FileNode is a directory
+## Add Toggle behavior if FileNode has Subfolder(s)
 
-We aim to bring in a toggling functionality but we will implement it without JavaScript. We will leverage the power of TailwindCSS and HTML label and input:checkbox elements. So, if the file is a directory, we render a label within which is a checkbox.
+We aim to bring in a toggling functionality but we will implement it without JavaScript. We will leverage the power of TailwindCSS and HTML label and input:checkbox elements. So, if the directory has subfolders, we render a label within which is a checkbox.
 
 ```tsx title="file-node.tsx" showLineNumbers
-import { type Dirent } from 'fs';
 import { FileIcon, FolderIcon } from 'lucide-react';
+import { Directory } from './directory';
+import { FileList } from './file-list';
 
-export function FileNode({ file }: { file: Dirent }) {
-  const isDirectory = file.isDirectory();
-
-  if (isDirectory) {
-    const nodeId = [file.path, file.name].join('-');
+export function FileNode({ directory }: { directory: Directory }) {
+  if (directory.subfolders) {
+    const nodeId = [directory.path, directory.name].join('-');
 
     return (
       <li>
@@ -146,7 +129,7 @@ export function FileNode({ file }: { file: Dirent }) {
           className="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-800 cursor-pointer"
         >
           <FolderIcon className="size-4 text-amber-500" />
-          <span>{file.name}</span>
+          <span>{directory.name}</span>
           <input
             defaultChecked={false}
             type="checkbox"
@@ -163,7 +146,7 @@ export function FileNode({ file }: { file: Dirent }) {
     <li>
       <div className="flex items-center gap-3 px-3 py-2 rounded">
         <FileIcon className="size-4 text-sky-300" />
-        <span>{file.name}</span>
+        <span>{directory.name}</span>
       </div>
     </li>
   );
@@ -172,7 +155,7 @@ export function FileNode({ file }: { file: Dirent }) {
 
 Note:
 
-- the `nodeId` in line 8 is defined to make sure the id of the checkbox is unique since we can have directories with the same file name.
+- the `nodeId` in line 7 is defined to make sure the id of the checkbox is unique since we can have directories with the same file name.
 - the `htmlFor` of the label element should point to the value of the `id` of the checkbox element.
 - the checkbox has a `hidden` attribute so it won't be visible.
 
@@ -180,22 +163,16 @@ Let us leave this for now. We will get back to this toggle behavior later.
 
 ## Render nested directories and/or files (Recursion!)
 
-Our implementation so far only renders the first-level directories and files relative to the root path we provided ('components', in this case). To be able to render the nested directories and files, first we use `getFilesOfPath` again and then render a `FileList` next to the label element.
+Our implementation so far only renders the first-level directories and files relative to the root path we provided ('components', in this case). To be able to render the nested directories and files, we render a `FileList` next to the label element.
 
-```tsx title="file-node.tsx" showLineNumbers {3,5,11,13,31}
-import { type Dirent } from 'fs';
+```tsx title="file-node.tsx" showLineNumbers {25}
 import { FileIcon, FolderIcon } from 'lucide-react';
+import { Directory } from './directory';
 import { FileList } from './file-list';
 
-export async function FileNode({ file }: { file: Dirent }) {
-  const isDirectory = file.isDirectory();
-
-  if (isDirectory) {
-    const nodeId = [file.path, file.name].join('-');
-
-    const filePath = file.path.replace(process.cwd(), '');
-
-    const fileList = await getFilesOfPath(filePath, file.name);
+export function FileNode({ directory }: { directory: Directory }) {
+  if (directory.subfolders) {
+    const nodeId = [directory.path, directory.name].join('-');
 
     return (
       <li>
@@ -204,7 +181,7 @@ export async function FileNode({ file }: { file: Dirent }) {
           className="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-800 cursor-pointer"
         >
           <FolderIcon className="size-4 text-amber-500" />
-          <span>{file.name}</span>
+          <span>{directory.name}</span>
           <input
             defaultChecked={false}
             type="checkbox"
@@ -213,7 +190,7 @@ export async function FileNode({ file }: { file: Dirent }) {
             hidden
           />
         </label>
-        <FileList fileList={fileList} />
+        <FileList fileList={directory.subfolders} />
       </li>
     );
   }
@@ -222,16 +199,14 @@ export async function FileNode({ file }: { file: Dirent }) {
     <li>
       <div className="flex items-center gap-3 px-3 py-2 rounded">
         <FileIcon className="size-4 text-sky-300" />
-        <span>{file.name}</span>
+        <span>{directory.name}</span>
       </div>
     </li>
   );
 }
 ```
 
-- In line 5, we turn the FileNode component into a Server Component by making the function `async`;
-- Line 11 is needed to define the proper directory to be passed to the `getFilesOfPath` function;
-- In Line 31, FileList will now render the nested directories and files in a recursive manner.
+`<FileList />` will now render the nested directories and files in a _recursive_ manner.
 
 ## Enter TailwindCSS `peer` and `has`
 
@@ -245,15 +220,15 @@ By this change we can style its `FileList` sibling (which has a `ul` as the root
 
 ```tsx title="file-list.tsx" showLineNumbers {8}
 import { cn } from '@lib/utils';
-import { type Dirent } from 'fs';
+import { Directory } from './directory';
 import { FileNode } from './file-node';
 
-export function FileList({ fileList }: { fileList: Dirent[] }) {
+export function FileList({ fileList }: { fileList: Directory[] }) {
   return (
     // other classes are omitted for brevity
     <ul className={cn('hidden peer-has-[:checked]:block')}>
-      {fileList.map((file) => (
-        <FileNode key={file.path} file={file} />
+      {fileList.map((directory) => (
+        <FileNode key={directory.path} directory={directory} />
       ))}
     </ul>
   );
@@ -300,9 +275,7 @@ This is just using the `li` element's pseudo `::before` element.
 
 ## Result
 
-Using this site's `components/FileTree/example` directory as the root path:
-
-<FileTree path="components/FileTree/example" />
+<FileTree />
 
 ## Conclusion
 

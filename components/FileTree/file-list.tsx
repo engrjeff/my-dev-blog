@@ -1,12 +1,12 @@
 import { cn } from '@lib/utils';
-import { type Dirent } from 'fs';
+import { Directory } from './directory';
 import { FileNode } from './file-node';
 
 export function FileList({
   fileList,
   root,
 }: {
-  fileList: Dirent[];
+  fileList: Directory[];
   root?: boolean;
 }) {
   return (
@@ -16,8 +16,8 @@ export function FileList({
         root ? 'pl-0' : 'hidden peer-has-[:checked]:block'
       )}
     >
-      {fileList.map((file) => (
-        <FileNode key={file.path} file={file} />
+      {fileList.map((directory) => (
+        <FileNode key={directory.path} directory={directory} />
       ))}
     </ul>
   );
