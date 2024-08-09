@@ -7,8 +7,11 @@ interface RelativeLinkProps {
 
 const RelativeLink = ({ href, label }: RelativeLinkProps) => {
   return (
-    <Link href={href}>
-      <a className='not-prose text-sky-500 hover:text-sky-500 hover:underline'>{label}</a>
+    <Link
+      href={href}
+      className="not-prose text-sky-500 hover:text-sky-500 hover:underline"
+    >
+      {label}
     </Link>
   );
 };
