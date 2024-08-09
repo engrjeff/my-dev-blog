@@ -5,10 +5,11 @@ const path = require('path');
 const nextConfig = {
   reactStrictMode: true,
   experimental: {
-    outputFileTracingIncludes: {
-      '/blogs/file-tree-component-using-react-server-components-and-tailwindcss':
-        ['/app', '/components/FileTree/example'],
-    },
+    turbotrace: {},
+    // outputFileTracingIncludes: {
+    //   '/blogs/file-tree-component-using-react-server-components-and-tailwindcss':
+    //     ['./app', './components/FileTree/example'],
+    // },
   },
   swcMinify: true,
   images: {
