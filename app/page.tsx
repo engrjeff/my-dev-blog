@@ -34,8 +34,14 @@ function Home() {
           Contributing to the community by sharing what I know. Helping other
           developers and engineers become more passionate in what they do.
         </p>
-        <div className="my-10">
+        <div className="my-10 flex gap-4 flex-col md:flex-row items-start md:items-center">
           <CallToActionLink href="/blogs">Read the Blogs</CallToActionLink>
+          <a
+            className="bg-transparent border border-gray-600 hover:bg-primary text-white font-medium py-4 px-8 rounded-full shadow-md inline-block"
+            href="mailto:jeffsegoviadev@gmail.com"
+          >
+            Message Me
+          </a>
         </div>
       </section>
 
